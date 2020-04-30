@@ -5,6 +5,8 @@ import (
 	"time"
 
 	huaweisdk "github.com/huaweicloud/golangsdk"
+	"github.com/huaweicloud/golangsdk/openstack/cce/v3/clusters"
+	"github.com/huaweicloud/golangsdk/openstack/cce/v3/nodes"
 	"github.com/huaweicloud/golangsdk/openstack/compute/v2/extensions/keypairs"
 	"github.com/huaweicloud/golangsdk/openstack/compute/v2/extensions/secgroups"
 	"github.com/huaweicloud/golangsdk/openstack/compute/v2/extensions/servergroups"
@@ -67,6 +69,11 @@ type Client interface {
 	AddTags(instanceID string, serverTags []string) error
 	CreateServerGroup(opts *servergroups.CreateOpts) (*servergroups.ServerGroup, error)
 	DeleteServerGroup(groupID string) error
+	InitCCE() error
+	CreateCluster(opts *CreateClusterOpts) (*clusters.Clusters, error)
+	DeleteCluster(clusterID string) error
+	CreateNodes(opts *CreateNodesOpts, count int) (*nodes.Nodes, error)
+	DeleteNodes(clusterID, nodeID string) error
 }
 
 // client contains service clients
@@ -75,6 +82,7 @@ type client struct {
 
 	ComputeV2 *huaweisdk.ServiceClient
 	VPC       *huaweisdk.ServiceClient
+	CCE       *huaweisdk.ServiceClient
 
 	opts *clientconfig.ClientOpts
 }

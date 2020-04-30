@@ -864,6 +864,8 @@ func NewServiceClient(service string, opts *ClientOpts) (*huaweisdk.ServiceClien
 		return huaweicloud.NewNetworkV2(pClient, eo)
 	case "object-store":
 		return huaweicloud.NewObjectStorageV1(pClient, eo)
+	case "cce":
+		return huaweicloud.NewCCE(pClient, eo)
 	case "orchestration":
 		return huaweicloud.NewOrchestrationV1(pClient, eo)
 	case "sharev2":

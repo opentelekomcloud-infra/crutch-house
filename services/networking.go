@@ -162,6 +162,16 @@ func (c *client) GetEIPStatus(eipID string) (string, error) {
 }
 
 func (c *client) CreateEIP(opts *ElasticIPOpts) (*eips.PublicIp, error) {
+	if opts.IPType == "" {
+		opts.IPType = "5_bgp"
+	}
+	if opts.BandwidthSize == 0 {
+		opts.BandwidthSize = 100
+	}
+	if opts.BandwidthType == "" {
+		opts.BandwidthType = "PER"
+	}
+
 	applyOpts := &eips.ApplyOpts{
 		IP: eips.PublicIpOpts{
 			Type: opts.IPType,
