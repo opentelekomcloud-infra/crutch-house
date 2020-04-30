@@ -76,7 +76,7 @@ type CreateNodesOpts struct {
 	ProductID        string
 }
 
-// InitCompute initializes Compute v2 service
+// InitCCE initializes Compute v2 service
 func (c *client) InitCCE() error {
 	if c.CCE != nil {
 		return nil
@@ -96,6 +96,7 @@ func (c *client) getClusterStatus(clusterID string) (string, error) {
 	}
 	return state.Status.Phase, nil
 }
+
 func (c *client) getNodeStatus(clusterID, nodeIDs string) (string, error) {
 	state, err := nodes.Get(c.CCE, clusterID, nodeIDs).Extract()
 	if err != nil {
