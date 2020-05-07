@@ -59,7 +59,6 @@ func TestClient_AuthenticateAKSK(t *testing.T) {
 				AccessKey:   os.Getenv("OTC_ACCESS_KEY_ID"),
 				SecretKey:   os.Getenv("OTC_ACCESS_KEY_SECRET"),
 				ProjectName: os.Getenv("OTC_PROJECT_NAME"),
-				DomainName:  os.Getenv("OTC_DOMAIN_NAME"),
 			},
 		})
 	err := client.Authenticate()

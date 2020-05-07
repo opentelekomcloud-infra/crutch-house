@@ -14,6 +14,10 @@ import (
 	"github.com/huaweicloud/golangsdk/openstack/networking/v1/eips"
 	"github.com/huaweicloud/golangsdk/openstack/networking/v1/subnets"
 	"github.com/huaweicloud/golangsdk/openstack/networking/v1/vpcs"
+	"github.com/huaweicloud/golangsdk/openstack/networking/v2/extensions/lbaas_v2/listeners"
+	"github.com/huaweicloud/golangsdk/openstack/networking/v2/extensions/lbaas_v2/loadbalancers"
+	"github.com/huaweicloud/golangsdk/openstack/networking/v2/extensions/lbaas_v2/monitors"
+	"github.com/huaweicloud/golangsdk/openstack/networking/v2/extensions/lbaas_v2/pools"
 
 	"github.com/opentelekomcloud-infra/crutch-house/clientconfig"
 )
@@ -26,7 +30,7 @@ const (
 
 type Client interface {
 	Authenticate() error
-	InitNetwork() error
+	InitVPC() error
 	CreateVPC(vpcName string) (*vpcs.Vpc, error)
 	GetVPCDetails(vpcID string) (*vpcs.Vpc, error)
 	FindVPC(vpcName string) (string, error)
@@ -56,7 +60,6 @@ type Client interface {
 	DeleteKeyPair(name string) error
 	FindFlavor(flavorName string) (string, error)
 	FindImage(imageName string) (string, error)
-	addInboundRule(secGroupID string, fromPort int, toPort int) error
 	CreateSecurityGroup(securityGroupName string, ports ...PortRange) (*secgroups.SecurityGroup, error)
 	FindSecurityGroups(secGroups []string) ([]string, error)
 	DeleteSecurityGroup(securityGroupID string) error
@@ -74,6 +77,20 @@ type Client interface {
 	DeleteCluster(clusterID string) error
 	CreateNodes(opts *CreateNodesOpts, count int) (*nodes.Nodes, error)
 	DeleteNodes(clusterID, nodeID string) error
+	InitNetworkV2() error
+	CreateLoadBalancer(opts *loadbalancers.CreateOpts) (*loadbalancers.LoadBalancer, error)
+	GetLoadBalancerDetails(id string) (*loadbalancers.LoadBalancer, error)
+	DeleteLoadBalancer(id string) error
+	BindFloatingIPToPort(floatingIP, portID string) error
+	CreateLBListener(opts *listeners.CreateOpts) (*listeners.Listener, error)
+	DeleteLBListener(id string) error
+	CreateLBPool(opts *pools.CreateOpts) (*pools.Pool, error)
+	DeleteLBPool(id string) error
+	CreateLBMember(poolID string, opts *pools.CreateMemberOpts) (*pools.Member, error)
+	GetLBMemberStatus(poolID, memberID string) (*pools.Member, error)
+	DeleteLBMember(poolID, memberID string) error
+	CreateLBMonitor(opts *monitors.CreateOpts) (*monitors.Monitor, error)
+	DeleteLBMonitor(id string) error
 }
 
 // client contains service clients
@@ -81,6 +98,7 @@ type client struct {
 	Provider *huaweisdk.ProviderClient
 
 	ComputeV2 *huaweisdk.ServiceClient
+	NetworkV2 *huaweisdk.ServiceClient
 	VPC       *huaweisdk.ServiceClient
 	CCE       *huaweisdk.ServiceClient
 

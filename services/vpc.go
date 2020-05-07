@@ -22,8 +22,8 @@ const (
 
 var defaultDNS = []string{primaryDNS, secondaryDNS}
 
-// InitNetwork initializes VPC v1 service
-func (c *client) InitNetwork() error {
+// InitVPC initializes VPC v1 service
+func (c *client) InitVPC() error {
 	if c.VPC != nil {
 		return nil
 	}

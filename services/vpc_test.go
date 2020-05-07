@@ -9,7 +9,7 @@ import (
 )
 
 func initNetwork(t *testing.T, client Client) {
-	require.NoError(t, client.InitNetwork())
+	require.NoError(t, client.InitVPC())
 }
 
 func TestClient_CreateVPC(t *testing.T) {

@@ -61,6 +61,7 @@ func blockDeviceOpts(opts *DiskOpts) bootfromvolume.BlockDevice {
 type ExtendedServerOpts struct {
 	*servers.CreateOpts
 	SubnetID      string
+	FixedIP       string
 	KeyPairName   string
 	DiskOpts      *DiskOpts
 	ServerGroupID string
@@ -76,7 +77,7 @@ func (c *client) CreateInstance(opts *ExtendedServerOpts) (*servers.Server, erro
 		SecurityGroups:   opts.SecurityGroups,
 		UserData:         opts.UserData,
 		AvailabilityZone: opts.AvailabilityZone,
-		Networks:         []servers.Network{{UUID: opts.SubnetID}},
+		Networks:         []servers.Network{{UUID: opts.SubnetID, FixedIP: opts.FixedIP}},
 		ServiceClient:    c.ComputeV2,
 	}
 
@@ -382,13 +383,13 @@ func (c *client) WaitForGroupDeleted(securityGroupID string) error {
 }
 
 // BindFloatingIP binds floating IP to instance
-func (c *client) BindFloatingIP(floatingIP string, instanceID string) error {
+func (c *client) BindFloatingIP(floatingIP, instanceID string) error {
 	opts := floatingips.AssociateOpts{FloatingIP: floatingIP}
 	return floatingips.AssociateInstance(c.ComputeV2, instanceID, opts).Err
 }
 
 // UnbindFloatingIP unbinds floating IP to instance
-func (c *client) UnbindFloatingIP(floatingIP string, instanceID string) error {
+func (c *client) UnbindFloatingIP(floatingIP, instanceID string) error {
 	opts := floatingips.DisassociateOpts{FloatingIP: floatingIP}
 	return floatingips.DisassociateInstance(c.ComputeV2, instanceID, opts).Err
 }
