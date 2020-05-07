@@ -137,7 +137,7 @@ func TestClient_CreateKeyPair(t *testing.T) {
 
 func TestClient_CreateFloatingIP(t *testing.T) {
 	client := computeClient(t)
-	require.NoError(t, client.InitNetwork())
+	require.NoError(t, client.InitVPC())
 	eip, err := client.CreateEIP(eipOptions)
 	require.NoError(t, err)
 	assert.NotEmpty(t, eip.PublicAddress)
