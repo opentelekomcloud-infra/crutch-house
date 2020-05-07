@@ -36,7 +36,7 @@ func TestClient_ClusterLifecycle(t *testing.T) {
 		_ = client.DeleteFloatingIP(ip.PublicAddress)
 	}()
 
-	clusterName := RandomString(10, "crutch-")
+	clusterName := RandomString(10, "crutch-", "0123456789abcdefghijklmnopqrstuvwxyz")
 	opts := &CreateClusterOpts{
 		Name:               clusterName,
 		ClusterType:        ClusterTypeECS,

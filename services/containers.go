@@ -76,7 +76,7 @@ type CreateNodesOpts struct {
 	ProductID        string
 }
 
-// InitCCE initializes Compute v2 service
+// InitCCE initializes CCE service
 func (c *client) InitCCE() error {
 	if c.CCE != nil {
 		return nil
