@@ -16,6 +16,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/apparentlymart/go-cidr/cidr"
+	"github.com/getlantern/deepcopy"
 )
 
 func initClients(t *testing.T, client Client) {
@@ -27,41 +28,46 @@ func initClients(t *testing.T, client Client) {
 
 const protocol = "HTTP"
 
-func createNodes(cl Client, opts *ExtendedServerOpts, netCIDR string, count int) ([]*servers.Server, []string, error) {
+func createNodes(cl Client, opts *ExtendedServerOpts, netCIDR string, count int) (nodes []*servers.Server, addresses []string, err error) {
 	nodeChan := make(chan *servers.Server, count)
 	errChan := make(chan error, count)
 
-	_, nw, e := net.ParseCIDR(netCIDR)
-	if e != nil {
-		return nil, nil, e
+	_, nw, err := net.ParseCIDR(netCIDR)
+	if err != nil {
+		return nil, nil, err
 	}
 
-	addresses := make([]string, count)
+	addresses = make([]string, count)
 	for i := 0; i < count; i++ {
 		ip, err := cidr.Host(nw, i+2)
 		if err != nil {
-			nodeChan <- nil
-			errChan <- err
-			continue
+			return nil, nil, err
 		}
-		opts.Name = fmt.Sprintf("%s_%d", opts.Name, i)
-		addresses[i] = ip.String()
-		opts.FixedIP = ip.String()
-		go func() {
+		address := ip.String()
+		addresses[i] = address
+		go func(addr, name string) {
+			var o = &ExtendedServerOpts{}
+			err := deepcopy.Copy(o, opts)
+			if err != nil {
+				nodeChan <- nil
+				errChan <- err
+			}
+			o.FixedIP = addr
+			o.Name = name
 			server, err := cl.CreateInstance(opts)
 			nodeChan <- server
 			errChan <- err
-		}()
+		}(address, fmt.Sprintf("%s_%d", opts.Name, i))
 	}
 
-	err := &multierror.Error{}
-	serverList := make([]*servers.Server, count)
-	for i := range serverList {
-		serverList[i] = <-nodeChan
-		err = multierror.Append(err, <-errChan)
+	mErr := &multierror.Error{}
+	nodes = make([]*servers.Server, count)
+	for i := range nodes {
+		nodes[i] = <-nodeChan
+		mErr = multierror.Append(mErr, <-errChan)
 	}
 
-	return serverList, addresses, err.ErrorOrNil()
+	return nodes, addresses, mErr.ErrorOrNil()
 }
 
 func deleteNodes(cl Client, nodes []*servers.Server) error {
