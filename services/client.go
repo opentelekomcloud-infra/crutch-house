@@ -30,6 +30,7 @@ const (
 
 type Client interface {
 	Authenticate() error
+	Token() (string, error)
 	InitVPC() error
 	CreateVPC(vpcName string) (*vpcs.Vpc, error)
 	GetVPCDetails(vpcID string) (*vpcs.Vpc, error)
@@ -127,4 +128,21 @@ func (c *client) Authenticate() error {
 	c.Provider = authClient
 	c.Provider.UserAgent.Prepend(userAgent)
 	return nil
+}
+
+func (c *client) Token() (string, error) {
+	if c.opts.AuthInfo.Token != "" {
+		return c.opts.AuthInfo.Token, nil
+	}
+
+	if token := c.Provider.Token(); token != "" {
+		return token, nil
+	}
+
+	if err := c.Authenticate(); err != nil {
+		return "", err
+	}
+
+	return c.Provider.Token(), nil
+
 }
