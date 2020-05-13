@@ -199,13 +199,8 @@ func installScriptEncode(script string) string {
 	return script
 }
 
-func splitNodeIDs(nodeIDs string) []string {
-	ids := strings.Split(nodeIDs, ",")
-	return ids[:len(ids)-1]
-}
-
 func (c *client) waitForMultipleNodes(clusterID, nodeIDs string, predicate func(nodeStatus string, err error) (bool, error)) (err *multierror.Error) {
-	ids := splitNodeIDs(nodeIDs)
+	ids := strings.Split(nodeIDs, ",")
 	var errChan = make(chan error, len(ids))
 	for _, nodeID := range ids {
 		go func(node string) {
@@ -313,13 +308,15 @@ func (c *client) CreateNodes(opts *CreateNodesOpts, count int) (*nodes.Nodes, er
 		return nil, err
 	}
 	nodeIDs := created.Metadata.Id
+	nodeIDs = nodeIDs[:len(created.Metadata.Id)-1]
 	log.Printf("Waiting for OpenTelekomCloud CCE nodes (%s) to become available", nodeIDs)
 	err = c.waitForNodesActive(clusterID, nodeIDs).ErrorOrNil()
+	created.Metadata.Id = nodeIDs
 	return created, err
 }
 
 func (c *client) DeleteNodes(clusterID, nodeIDs string) error {
-	ids := splitNodeIDs(nodeIDs)
+	ids := strings.Split(nodeIDs, ",")
 	var errChan = make(chan error, len(ids))
 	for _, nodeID := range ids {
 		go func(node string) {
