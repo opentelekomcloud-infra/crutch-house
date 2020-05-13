@@ -199,10 +199,9 @@ func installScriptEncode(script string) string {
 	return script
 }
 
-func (c *client) waitForMultipleNodes(clusterID, nodeIDs string, predicate func(nodeStatus string, err error) (bool, error)) (err *multierror.Error) {
-	ids := strings.Split(nodeIDs, ",")
-	var errChan = make(chan error, len(ids))
-	for _, nodeID := range ids {
+func (c *client) waitForMultipleNodes(clusterID string, nodeIDs []string, predicate func(nodeStatus string, err error) (bool, error)) (err *multierror.Error) {
+	var errChan = make(chan error, len(nodeIDs))
+	for _, nodeID := range nodeIDs {
 		go func(node string) {
 			errChan <- golangsdk.WaitFor(600, func() (bool, error) {
 				nodeStatus, err := c.getNodeStatus(clusterID, node)
@@ -211,13 +210,13 @@ func (c *client) waitForMultipleNodes(clusterID, nodeIDs string, predicate func(
 		}(nodeID)
 	}
 
-	for range ids {
+	for range nodeIDs {
 		err = multierror.Append(err, <-errChan)
 	}
 	return err
 }
 
-func (c *client) waitForNodesActive(clusterID, nodeIDs string) *multierror.Error {
+func (c *client) waitForNodesActive(clusterID string, nodeIDs []string) *multierror.Error {
 	return c.waitForMultipleNodes(clusterID, nodeIDs, func(nodeStatus string, err error) (bool, error) {
 		if err != nil {
 			return true, err
@@ -226,7 +225,7 @@ func (c *client) waitForNodesActive(clusterID, nodeIDs string) *multierror.Error
 	})
 }
 
-func (c *client) waitForNodesDeleted(clusterID, nodeIDs string) *multierror.Error {
+func (c *client) waitForNodesDeleted(clusterID string, nodeIDs []string) *multierror.Error {
 	return c.waitForMultipleNodes(clusterID, nodeIDs, func(nodeStatus string, err error) (bool, error) {
 		if err == nil {
 			return false, nil
@@ -248,7 +247,7 @@ func emptyIfNil(src map[string]string) map[string]string {
 }
 
 // CreateNodes create `count` nodes and wait until they are active
-func (c *client) CreateNodes(opts *CreateNodesOpts, count int) (*nodes.Nodes, error) {
+func (c *client) CreateNodes(opts *CreateNodesOpts, count int) ([]string, error) {
 	var base64PreInstall, base64PostInstall string
 	if opts.PreInstall != "" {
 		base64PreInstall = installScriptEncode(opts.PreInstall)
@@ -309,25 +308,48 @@ func (c *client) CreateNodes(opts *CreateNodesOpts, count int) (*nodes.Nodes, er
 	}
 	nodeIDs := created.Metadata.Id
 	nodeIDs = nodeIDs[:len(created.Metadata.Id)-1]
+	nodeIDSlice := strings.Split(nodeIDs, ",")
 	log.Printf("Waiting for OpenTelekomCloud CCE nodes (%s) to become available", nodeIDs)
-	err = c.waitForNodesActive(clusterID, nodeIDs).ErrorOrNil()
-	created.Metadata.Id = nodeIDs
-	return created, err
+	err = c.waitForNodesActive(clusterID, nodeIDSlice).ErrorOrNil()
+	return nodeIDSlice, err
 }
 
-func (c *client) DeleteNodes(clusterID, nodeIDs string) error {
-	ids := strings.Split(nodeIDs, ",")
-	var errChan = make(chan error, len(ids))
-	for _, nodeID := range ids {
+func (c *client) GetNodesStatus(clusterID string, nodeIDs []string) ([]*nodes.Status, error) {
+	nodesChan := make(chan *nodes.Status, len(nodeIDs))
+	errChan := make(chan error, len(nodeIDs))
+	for _, nodeID := range nodeIDs {
+		go func(id string) {
+			node, err := nodes.Get(c.CCE, clusterID, id).Extract()
+			if err != nil {
+				errChan <- err
+				nodesChan <- nil
+				return
+			}
+			errChan <- nil
+			nodesChan <- &node.Status
+		}(nodeID)
+	}
+	result := make([]*nodes.Status, len(nodeIDs))
+	mErr := &multierror.Error{}
+	for i := range nodeIDs {
+		mErr = multierror.Append(mErr, <-errChan)
+		result[i] = <-nodesChan
+	}
+	return result, mErr.ErrorOrNil()
+}
+
+func (c *client) DeleteNodes(clusterID string, nodeIDs []string) error {
+	var errChan = make(chan error, len(nodeIDs))
+	for _, nodeID := range nodeIDs {
 		go func(node string) {
 			errChan <- nodes.Delete(c.CCE, clusterID, node).Err
 		}(nodeID)
 	}
 	var err *multierror.Error
-	for range ids {
+	for range nodeIDs {
 		err = multierror.Append(err, <-errChan)
 	}
-	log.Printf("Waiting for OpenTelekomCloud CCE nodes (%s) to be deleted", nodeIDs)
+	log.Printf("Waiting for OpenTelekomCloud CCE nodes (%s) to be deleted", strings.Join(nodeIDs, ","))
 	err = multierror.Append(err, c.waitForNodesDeleted(clusterID, nodeIDs))
 	return err.ErrorOrNil()
 }

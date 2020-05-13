@@ -51,6 +51,7 @@ func createNodes(cl Client, opts *ExtendedServerOpts, netCIDR string, count int)
 			if err != nil {
 				nodeChan <- nil
 				errChan <- err
+				return
 			}
 			o.FixedIP = addr
 			o.Name = name
@@ -88,6 +89,7 @@ func deleteNodes(cl Client, nodes []*servers.Server) error {
 
 			if err == nil {
 				errChan <- nil
+				return
 			}
 			switch err.(type) {
 			case golangsdk.ErrDefault404:

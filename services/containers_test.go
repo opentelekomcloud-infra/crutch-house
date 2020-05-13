@@ -57,10 +57,11 @@ func TestClient_ClusterLifecycle(t *testing.T) {
 
 	cluster, err := client.CreateCluster(opts)
 	require.NoError(t, err)
+	clusterID := cluster.Metadata.Id
 
 	nodeOpts := &CreateNodesOpts{
 		Name:             "node-test",
-		ClusterID:        cluster.Metadata.Id,
+		ClusterID:        clusterID,
 		Region:           os.Getenv("OTC_PROJECT_NAME"),
 		KeyPair:          kp.Name,
 		FlavorID:         "s2.large.2",
@@ -79,9 +80,15 @@ func TestClient_ClusterLifecycle(t *testing.T) {
 		EipCount:  1,
 		PublicKey: kp.PublicKey,
 	}
-	created, err := client.CreateNodes(nodeOpts, 2)
+	nodeCount := 2
+	created, err := client.CreateNodes(nodeOpts, nodeCount)
 	require.NoError(t, err)
 
-	assert.NoError(t, client.DeleteNodes(cluster.Metadata.Id, created.Metadata.Id))
-	assert.NoError(t, client.DeleteCluster(cluster.Metadata.Id))
+	status, err := client.GetNodesStatus(clusterID, created)
+	assert.NoError(t, err)
+	assert.Len(t, status, nodeCount)
+	assert.NotContains(t, status, "")
+
+	assert.NoError(t, client.DeleteNodes(clusterID, created))
+	assert.NoError(t, client.DeleteCluster(clusterID))
 }

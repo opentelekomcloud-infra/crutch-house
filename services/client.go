@@ -76,8 +76,9 @@ type Client interface {
 	InitCCE() error
 	CreateCluster(opts *CreateClusterOpts) (*clusters.Clusters, error)
 	DeleteCluster(clusterID string) error
-	CreateNodes(opts *CreateNodesOpts, count int) (*nodes.Nodes, error)
-	DeleteNodes(clusterID, nodeID string) error
+	CreateNodes(opts *CreateNodesOpts, count int) ([]string, error)
+	GetNodesStatus(clusterID string, nodeIDs []string) ([]*nodes.Status, error)
+	DeleteNodes(clusterID string, nodeIDs []string) error
 	InitNetworkV2() error
 	CreateLoadBalancer(opts *loadbalancers.CreateOpts) (*loadbalancers.LoadBalancer, error)
 	GetLoadBalancerDetails(id string) (*loadbalancers.LoadBalancer, error)
