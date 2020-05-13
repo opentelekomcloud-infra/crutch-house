@@ -314,6 +314,7 @@ func (c *client) CreateNodes(opts *CreateNodesOpts, count int) ([]string, error)
 	return nodeIDSlice, err
 }
 
+// GetNodesStatus returns statuses of given nodes
 func (c *client) GetNodesStatus(clusterID string, nodeIDs []string) ([]*nodes.Status, error) {
 	nodesChan := make(chan *nodes.Status, len(nodeIDs))
 	errChan := make(chan error, len(nodeIDs))
@@ -338,6 +339,7 @@ func (c *client) GetNodesStatus(clusterID string, nodeIDs []string) ([]*nodes.St
 	return result, mErr.ErrorOrNil()
 }
 
+// Delete all given nodes
 func (c *client) DeleteNodes(clusterID string, nodeIDs []string) error {
 	var errChan = make(chan error, len(nodeIDs))
 	for _, nodeID := range nodeIDs {
@@ -352,4 +354,9 @@ func (c *client) DeleteNodes(clusterID string, nodeIDs []string) error {
 	log.Printf("Waiting for OpenTelekomCloud CCE nodes (%s) to be deleted", strings.Join(nodeIDs, ","))
 	err = multierror.Append(err, c.waitForNodesDeleted(clusterID, nodeIDs))
 	return err.ErrorOrNil()
+}
+
+// Update cluster description
+func (c *client) UpdateCluster(clusterID string, opts *clusters.UpdateSpec) error {
+	return clusters.Update(c.CCE, clusterID, clusters.UpdateOpts{Spec: *opts}).Err
 }

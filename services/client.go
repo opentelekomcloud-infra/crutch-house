@@ -75,6 +75,7 @@ type Client interface {
 	DeleteServerGroup(groupID string) error
 	InitCCE() error
 	CreateCluster(opts *CreateClusterOpts) (*clusters.Clusters, error)
+	UpdateCluster(clusterID string, opts *clusters.UpdateSpec) error
 	DeleteCluster(clusterID string) error
 	CreateNodes(opts *CreateNodesOpts, count int) ([]string, error)
 	GetNodesStatus(clusterID string, nodeIDs []string) ([]*nodes.Status, error)
