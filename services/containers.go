@@ -183,6 +183,14 @@ func (c *client) CreateCluster(opts *CreateClusterOpts) (*clusters.Clusters, err
 	return create, c.waitForCluster(clusterID)
 }
 
+func (c *client) GetCluster(clusterID string) (*clusters.Clusters, error) {
+	return clusters.Get(c.CCE, clusterID).Extract()
+}
+
+func (c *client) GetClusterCertificate(clusterID string) (*clusters.Certificate, error) {
+	return clusters.GetCert(c.CCE, clusterID).Extract()
+}
+
 func (c *client) DeleteCluster(clusterID string) error {
 	err := clusters.Delete(c.CCE, clusterID).Err
 	if err != nil {
