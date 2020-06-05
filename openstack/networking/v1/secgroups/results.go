@@ -5,51 +5,64 @@ import (
 	"github.com/huaweicloud/golangsdk/pagination"
 )
 
+type Direction string
+type EtherType string
+type Protocol string
+
+const (
+	Egress  Direction = "egress"
+	Ingress Direction = "ingress"
+
+	IPv4 EtherType = "IPv4"
+	IPv6 EtherType = "IPv6"
+
+	All  Protocol = ""
+	ICMP Protocol = "icmp"
+	TCP  Protocol = "tcp"
+	UDP  Protocol = "udp"
+)
+
+type PortRange struct {
+	Min uint16
+	Max uint16
+}
+
 // Route is a possible route in a vpc.
-type Route struct {
-	NextHop         string `json:"nexthop"`
-	DestinationCIDR string `json:"destination"`
+type Rule struct {
+	ID          string `json:"id"`
+	Description string `json:"description"`
+	SecGroupID  string `json:"sec_group_id"`
+	// Rule direction
+	Direction Direction `json:"direction"`
+	// IP protocol version
+	Ethertype EtherType `json:"ethertype"`
+	// Protocol type. If the parameter is left blank, all protocols are supported.
+	Protocol Protocol `json:"protocol"`
+
+	PortRangeMin uint16 `json:"port_range_min"`
+	PortRangeMax uint16 `json:"port_range_max"`
+
+	RemoteIPPrefix string `json:"remote_ip_prefix,omitempty"`
+	RemoteGroupID  string `json:"remote_group_id,omitempty"`
 }
 
-// Vpc represents a Neutron vpc. A vpc is a logical entity that
-// forwards packets across internal subnets and NATs (network address
-// translation) them on external networks through an appropriate gateway.
-//
-// A vpc has an interface for each subnet with which it is associated. By
-// default, the IP address of such interface is the subnet's gateway IP. Also,
-// whenever a vpc is associated with a subnet, a port for that vpc
-// interface is added to the subnet's network.
-type Vpc struct {
-	// ID is the unique identifier for the vpc.
-	ID string `json:"id"`
-
-	// Name is the human readable name for the vpc. It does not have to be
-	// unique.
-	Name string `json:"name"`
-
-	//Specifies the range of available subnets in the VPC.
-	CIDR string `json:"cidr"`
-
-	// Status indicates whether or not a vpc is currently operational.
-	Status string `json:"status"`
-
-	// Routes are a collection of static routes that the vpc will host.
-	Routes []Route `json:"routes"`
-
-	//Provides informaion about shared snat
-	EnableSharedSnat bool `json:"enable_shared_snat"`
+type SecurityGroup struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Rules       []Rule `json:"security_group_rules"`
 }
 
-// VpcPage is the page returned by a pager when traversing over a
-// collection of vpcs.
-type VpcPage struct {
+// SecGroupPage is the page returned by a pager when traversing over a
+// collection of security groups.
+type SecGroupPage struct {
 	pagination.LinkedPageBase
 }
 
 // NextPageURL is invoked when a paginated collection of vpcs has reached
 // the end of a page and the pager seeks to traverse over a new one. In order
 // to do this, it needs to construct the next page's URL.
-func (r VpcPage) NextPageURL() (string, error) {
+func (r SecGroupPage) NextPageURL() (string, error) {
 	var s struct {
 		Links []golangsdk.Link `json:"vpcs_links"`
 	}
@@ -60,21 +73,21 @@ func (r VpcPage) NextPageURL() (string, error) {
 	return golangsdk.ExtractNextURL(s.Links)
 }
 
-// IsEmpty checks whether a VpcPage struct is empty.
-func (r VpcPage) IsEmpty() (bool, error) {
-	is, err := ExtractVpcs(r)
+// IsEmpty checks whether a SecGroupPage struct is empty.
+func (r SecGroupPage) IsEmpty() (bool, error) {
+	is, err := ExtractSecGroups(r)
 	return len(is) == 0, err
 }
 
-// ExtractVpcs accepts a Page struct, specifically a VpcPage struct,
-// and extracts the elements into a slice of Vpc structs. In other words,
+// ExtractSecGroups accepts a Page struct, specifically a SecGroupPage struct,
+// and extracts the elements into a slice of SecurityGroup structs. In other words,
 // a generic collection is mapped into a relevant slice.
-func ExtractVpcs(r pagination.Page) ([]Vpc, error) {
+func ExtractSecGroups(r pagination.Page) ([]SecurityGroup, error) {
 	var s struct {
-		Vpcs []Vpc `json:"vpcs"`
+		SecurityGroups []SecurityGroup `json:"sec_groups"`
 	}
-	err := (r.(VpcPage)).ExtractInto(&s)
-	return s.Vpcs, err
+	err := (r.(SecGroupPage)).ExtractInto(&s)
+	return s.SecurityGroups, err
 }
 
 type commonResult struct {
@@ -82,12 +95,12 @@ type commonResult struct {
 }
 
 // Extract is a function that accepts a result and extracts a vpc.
-func (r commonResult) Extract() (*Vpc, error) {
+func (r commonResult) Extract() (*SecurityGroup, error) {
 	var s struct {
-		Vpc *Vpc `json:"vpc"`
+		SecurityGroup *SecurityGroup `json:"sec_group"`
 	}
 	err := r.ExtractInto(&s)
-	return s.Vpc, err
+	return s.SecurityGroup, err
 }
 
 // CreateResult represents the result of a create operation. Call its Extract

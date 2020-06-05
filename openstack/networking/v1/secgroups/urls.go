@@ -2,7 +2,7 @@ package secgroups
 
 import "github.com/huaweicloud/golangsdk"
 
-const resourcePath = "vpcs"
+const resourcePath = "security-groups"
 
 func rootURL(c *golangsdk.ServiceClient) string {
 	return c.ServiceURL(c.ProjectID, resourcePath)

@@ -1,8 +1,8 @@
 /*
-Package vpcs enables management and retrieval of Vpcs
+Package vpcs enables management and retrieval of SecurityGroups
 VPC service.
 
-Example to List Vpcs
+Example to List SecurityGroups
 
 	listOpts := vpcs.ListOpts{}
 	allVpcs, err := vpcs.List(vpcClient, listOpts)
