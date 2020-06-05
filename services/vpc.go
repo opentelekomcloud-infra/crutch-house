@@ -2,8 +2,8 @@ package services
 
 import (
 	"fmt"
-
 	"github.com/huaweicloud/golangsdk"
+	"github.com/huaweicloud/golangsdk/openstack/compute/v2/extensions/secgroups"
 	"github.com/huaweicloud/golangsdk/openstack/networking/v1/eips"
 	"github.com/huaweicloud/golangsdk/openstack/networking/v1/subnets"
 	"github.com/huaweicloud/golangsdk/openstack/networking/v1/vpcs"
@@ -64,6 +64,20 @@ func (c *client) FindVPC(vpcName string) (string, error) {
 		return "", fmt.Errorf("multiple VPC found by name %s. Please provide VPC ID instead", vpcName)
 	}
 	return vpcList[0].ID, nil
+}
+
+// DeleteSecurityGroupViaVPC deletes security group from give VPC Id
+func (c *client) DeleteSecurityGroupViaVPC(vpcId string) error {
+	const sgUrl, limit = "security-groups", 10
+	url := golangsdk.ServiceClient.ServiceURL(fmt.Sprintf("%s?limit=%d&vpc_id=%s", sgUrl, limit, vpcId))
+
+	return secgroups.Delete(sg.ID)
+}
+
+// Get will return details for a particular security group.
+func Get(client *golangsdk.ServiceClient, id string) (r GetResult) {
+	_, r.Err = client.Get(resourceURL(client, id), &r.Body, nil)
+	return
 }
 
 // WaitForVPCStatus waits until VPC is in given status

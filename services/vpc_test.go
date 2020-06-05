@@ -29,6 +29,12 @@ func TestClient_CreateVPC(t *testing.T) {
 	assert.NoError(t, client.DeleteVPC(vpc.ID))
 }
 
+func TestClient_DeleteSecurityGroupViaVPC(t *testing.T) {
+	cleanupResources(t)
+	client := authClient(t)
+	sgroup, err := client.DeleteSecurityGroupViaVPC("123")
+}
+
 func TestClient_CreateSubnet(t *testing.T) {
 	cleanupResources(t)
 	client := authClient(t)
