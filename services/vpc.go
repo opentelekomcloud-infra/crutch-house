@@ -9,6 +9,7 @@ import (
 	"github.com/huaweicloud/golangsdk/openstack/networking/v1/vpcs"
 
 	"github.com/opentelekomcloud-infra/crutch-house/clientconfig"
+	secgroupsv1 "github.com/opentelekomcloud-infra/crutch-house/openstack/networking/v1/secgroups"
 )
 
 const (
@@ -68,16 +69,18 @@ func (c *client) FindVPC(vpcName string) (string, error) {
 
 // DeleteSecurityGroupViaVPC deletes security group from give VPC Id
 func (c *client) DeleteSecurityGroupViaVPC(vpcId string) error {
-	const sgUrl, limit = "security-groups", 10
-	url := golangsdk.ServiceClient.ServiceURL(fmt.Sprintf("%s?limit=%d&vpc_id=%s", sgUrl, limit, vpcId))
-
-	return secgroups.Delete(sg.ID)
-}
-
-// Get will return details for a particular security group.
-func Get(client *golangsdk.ServiceClient, id string) (r GetResult) {
-	_, r.Err = client.Get(resourceURL(client, id), &r.Body, nil)
-	return
+	opts := secgroupsv1.ListOpts{
+		Limit: "5",
+		VpcID: vpcId,
+	}
+	sg, err := secgroupsv1.List(c.VPC, opts)
+	if err != nil {
+		return err
+	}
+	for _, secGrp := range sg {
+		secgroups.Delete(c.VPC, secGrp.ID)
+	}
+	return nil
 }
 
 // WaitForVPCStatus waits until VPC is in given status
