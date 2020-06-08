@@ -67,8 +67,8 @@ func (c *client) FindVPC(vpcName string) (string, error) {
 	return vpcList[0].ID, nil
 }
 
-// DeleteSecurityGroupViaVPC deletes security group from give VPC Id
-func (c *client) DeleteSecurityGroupViaVPC(vpcId string) error {
+// DeleteSecurityGroupForVPC deletes all security groups of VPC
+func (c *client) DeleteSecurityGroupForVPC(vpcId string) error {
 	opts := secgroupsv1.ListOpts{
 		VpcID: vpcId,
 	}

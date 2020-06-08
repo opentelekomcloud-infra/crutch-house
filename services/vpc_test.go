@@ -47,7 +47,7 @@ func TestClient_DeleteSecurityGroupViaVPC(t *testing.T) {
 	require.NoError(t, err)
 	defer func() { _ = client.DeleteSecurityGroup(sg.ID) }()
 
-	err = client.DeleteSecurityGroupViaVPC(vpc.ID)
+	err = client.DeleteSecurityGroupForVPC(vpc.ID)
 	assert.NoError(t, err)
 
 	sgIDs, err := client.FindSecurityGroups([]string{sgName})
