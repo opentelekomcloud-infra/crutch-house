@@ -197,7 +197,10 @@ func (c *client) DeleteCluster(clusterID string) error {
 		return err
 	}
 	log.Printf("Waiting for OpenTelekomCloud CCE cluster (%s) to be deleted", clusterID)
-	return c.waitForClusterDelete(clusterID)
+	if err = c.waitForClusterDelete(clusterID); err != nil {
+		return err
+	}
+	return nil
 }
 
 func installScriptEncode(script string) string {
