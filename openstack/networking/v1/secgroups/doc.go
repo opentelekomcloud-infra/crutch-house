@@ -1,6 +1,5 @@
 /*
-Package secgroups enables Querying of SecurityGroups
-Security Group service.
+Package secgroups enables Querying of Security Group service.
 
 Example Querying Security Groups
 
