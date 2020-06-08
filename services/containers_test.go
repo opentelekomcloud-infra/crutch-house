@@ -76,8 +76,6 @@ func TestClient_ClusterLifecycle(t *testing.T) {
 				VolumeType: "SATA",
 			},
 		},
-		MaxPods:   10,
-		EipCount:  1,
 		PublicKey: kp.PublicKey,
 	}
 	nodeCount := 2
