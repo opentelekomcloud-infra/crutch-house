@@ -30,6 +30,7 @@ const (
 
 type Client interface {
 	Authenticate() error
+	Token() (string, error)
 	InitVPC() error
 	CreateVPC(vpcName string) (*vpcs.Vpc, error)
 	GetVPCDetails(vpcID string) (*vpcs.Vpc, error)
@@ -74,9 +75,13 @@ type Client interface {
 	DeleteServerGroup(groupID string) error
 	InitCCE() error
 	CreateCluster(opts *CreateClusterOpts) (*clusters.Clusters, error)
+	GetCluster(clusterID string) (*clusters.Clusters, error)
+	GetClusterCertificate(clusterID string) (*clusters.Certificate, error)
+	UpdateCluster(clusterID string, opts *clusters.UpdateSpec) error
 	DeleteCluster(clusterID string) error
-	CreateNodes(opts *CreateNodesOpts, count int) (*nodes.Nodes, error)
-	DeleteNodes(clusterID, nodeID string) error
+	CreateNodes(opts *CreateNodesOpts, count int) ([]string, error)
+	GetNodesStatus(clusterID string, nodeIDs []string) ([]*nodes.Status, error)
+	DeleteNodes(clusterID string, nodeIDs []string) error
 	InitNetworkV2() error
 	CreateLoadBalancer(opts *loadbalancers.CreateOpts) (*loadbalancers.LoadBalancer, error)
 	GetLoadBalancerDetails(id string) (*loadbalancers.LoadBalancer, error)
@@ -127,4 +132,21 @@ func (c *client) Authenticate() error {
 	c.Provider = authClient
 	c.Provider.UserAgent.Prepend(userAgent)
 	return nil
+}
+
+func (c *client) Token() (string, error) {
+	if c.opts.AuthInfo.Token != "" {
+		return c.opts.AuthInfo.Token, nil
+	}
+
+	if token := c.Provider.Token(); token != "" {
+		return token, nil
+	}
+
+	if err := c.Authenticate(); err != nil {
+		return "", err
+	}
+
+	return c.Provider.Token(), nil
+
 }
