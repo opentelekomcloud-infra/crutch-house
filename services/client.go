@@ -62,6 +62,7 @@ type Client interface {
 	FindFlavor(flavorName string) (string, error)
 	FindImage(imageName string) (string, error)
 	CreateSecurityGroup(securityGroupName string, ports ...PortRange) (*secgroups.SecurityGroup, error)
+	DeleteSecurityGroupViaVPC(vpcId string) error
 	FindSecurityGroups(secGroups []string) ([]string, error)
 	DeleteSecurityGroup(securityGroupID string) error
 	WaitForGroupDeleted(securityGroupID string) error

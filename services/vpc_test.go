@@ -31,8 +31,25 @@ func TestClient_CreateVPC(t *testing.T) {
 
 func TestClient_DeleteSecurityGroupViaVPC(t *testing.T) {
 	cleanupResources(t)
-	client := authClient(t)
-	sgroup, err := client.DeleteSecurityGroupViaVPC("123")
+
+	client := computeClient(t)
+	initNetwork(t, client)
+
+	vpc, err := client.CreateVPC(vpcName)
+	require.NoError(t, err)
+	defer deleteVPC(t, vpc.ID)
+
+	subnet, err := client.CreateSubnet(vpc.ID, subnetName)
+	require.NoError(t, err)
+	defer deleteSubnet(t, vpc.ID, subnet.ID)
+
+	sg, err := client.CreateSecurityGroup(sgName, PortRange{From: 22})
+	require.NoError(t, err)
+	defer func() { _ = client.DeleteSecurityGroup(sg.ID) }()
+
+	err = client.DeleteSecurityGroupViaVPC(vpc.ID)
+	assert.NoError(t, err)
+
 }
 
 func TestClient_CreateSubnet(t *testing.T) {
