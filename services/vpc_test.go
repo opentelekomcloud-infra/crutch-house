@@ -50,6 +50,9 @@ func TestClient_DeleteSecurityGroupViaVPC(t *testing.T) {
 	err = client.DeleteSecurityGroupViaVPC(vpc.ID)
 	assert.NoError(t, err)
 
+	sgIDs, err := client.FindSecurityGroups([]string{sgName})
+	assert.NoError(t, err)
+	assert.EqualValuesf(t, sg.ID, sgIDs[0], invalidFind, "sec group")
 }
 
 func TestClient_CreateSubnet(t *testing.T) {

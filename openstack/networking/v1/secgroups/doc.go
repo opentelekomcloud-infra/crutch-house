@@ -1,52 +1,21 @@
 /*
-Package vpcs enables management and retrieval of SecurityGroups
-VPC service.
+Package secgroups enables Querying of SecurityGroups
+Security Group service.
 
-Example to List SecurityGroups
+Example Querying Security Groups
 
-	listOpts := vpcs.ListOpts{}
-	allVpcs, err := vpcs.List(vpcClient, listOpts)
+	listOpts := secgroups.ListOpts{
+		Limit: "5",
+		VpcID: vpcId,
+	}
+	sg, err := secgroups.List(vpcClient, listOpts)
 	if err != nil {
 		panic(err)
 	}
 
-	for _, vpc := range allVpcs {
-		fmt.Printf("%+v\n", vpc)
+	for _, secGrp := range sg {
+		fmt.Printf("%+v\n", secGrp)
 	}
 
-Example to Create a Vpc
-
-	createOpts := vpcs.CreateOpts{
-		Name:         "vpc_1",
-		CIDR:         "192.168.0.0/24"
-
-	}
-
-	vpc, err := vpcs.Create(vpcClient, createOpts).Extract()
-	if err != nil {
-		panic(err)
-	}
-
-Example to Update a Vpc
-
-	vpcID := "4e8e5957-649f-477b-9e5b-f1f75b21c03c"
-
-	updateOpts := vpcs.UpdateOpts{
-		Name:         "vpc_2",
-		CIDR:         "192.168.0.0/23"
-	}
-
-	vpc, err := vpcs.Update(vpcClient, vpcID, updateOpts).Extract()
-	if err != nil {
-		panic(err)
-	}
-
-Example to Delete a Vpc
-
-	vpcID := "4e8e5957-649f-477b-9e5b-f1f75b21c03c"
-	err := vpcs.Delete(vpcClient, vpcID).ExtractErr()
-	if err != nil {
-		panic(err)
-	}
 */
 package secgroups
