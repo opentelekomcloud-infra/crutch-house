@@ -121,8 +121,8 @@ func (c *client) waitForCluster(clusterID string) error {
 func (c *client) waitForClusterDelete(clusterID string) error {
 	return golangsdk.WaitFor(600, func() (bool, error) {
 		_, err := c.getClusterStatus(clusterID)
-		if err != nil {
-			return false, err
+		if err == nil {
+			return false, nil
 		}
 		switch err.(type) {
 		case golangsdk.ErrDefault404:
