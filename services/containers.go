@@ -315,7 +315,7 @@ func (c *client) CreateNodes(opts *CreateNodesOpts, count int) ([]string, error)
 		return nil, err
 	}
 	nodeIDs := created.Metadata.Id
-	nodeIDs = nodeIDs[:len(created.Metadata.Id)-1]
+	nodeIDs = nodeIDs[:len(created.Metadata.Id)]
 	nodeIDSlice := strings.Split(nodeIDs, ",")
 	log.Printf("Waiting for OpenTelekomCloud CCE nodes (%s) to become available", nodeIDs)
 	err = c.waitForNodesActive(clusterID, nodeIDSlice).ErrorOrNil()

@@ -32,9 +32,7 @@ func TestClient_ClusterLifecycle(t *testing.T) {
 
 	ip, err := client.CreateEIP(&ElasticIPOpts{})
 	require.NoError(t, err)
-	defer func() {
-		_ = client.DeleteFloatingIP(ip.PublicAddress)
-	}()
+	defer func() { _ = client.DeleteFloatingIP(ip.PublicAddress) }()
 
 	clusterName := RandomString(10, "crutch-", "0123456789abcdefghijklmnopqrstuvwxyz")
 	opts := &CreateClusterOpts{
