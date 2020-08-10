@@ -1,0 +1,8 @@
+---
+- project:
+    check:
+      jobs:
+        - golangci-lint
+    gate:
+      jobs:
+        - golangci-lint

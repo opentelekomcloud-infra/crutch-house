@@ -1,0 +1,5 @@
+---
+- job: crutch-house-test
+  parent: golang-test
+  description: |
+    Run crutch-house acceptance tests
