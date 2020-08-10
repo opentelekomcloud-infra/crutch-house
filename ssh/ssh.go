@@ -119,7 +119,9 @@ func (kp *KeyPair) Fingerprint() string {
 	b, _ := base64.StdEncoding.DecodeString(string(kp.PublicKey))
 	h := md5.New()
 
-	io.WriteString(h, string(b))
+	if _, err := io.WriteString(h, string(b)); err != nil {
+		fmt.Print("Couldn't write public key")
+	}
 
 	return fmt.Sprintf("%x", h.Sum(nil))
 }
