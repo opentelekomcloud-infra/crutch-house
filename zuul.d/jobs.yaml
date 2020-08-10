@@ -1,4 +1,16 @@
-- job: crutch-house-test
-  parent: golang-test
-  description: |
-    Run crutch-house acceptance tests
+- job:
+    name: crutch-house
+    description: |
+      Base job for executing functional tests with golang-go against OTC
+    parent: golang-go-test
+    secrets:
+      - name: test
+        secret: test
+    pre-run: playbooks/acceptance_pre.yaml
+    post-run: playbooks/acceptance_post.yaml
+    timeout: 3000
+
+- job:
+    name: crutch-house-master
+    parent: crutch-house
+    branches: master

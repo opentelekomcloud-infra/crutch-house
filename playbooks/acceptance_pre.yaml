@@ -1,0 +1,15 @@
+---
+- name: Install required packages
+  package:
+    name:
+      - curl
+    state: latest
+
+- name: Create dir for clouds.yaml
+  file:
+    path: ~/.config/openstack
+    state: directory
+
+- name: Decrypt clouds.yaml
+
+  no_log: True
