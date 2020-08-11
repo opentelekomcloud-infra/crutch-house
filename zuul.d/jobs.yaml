@@ -3,7 +3,6 @@
     description: |
       Base job for executing functional tests with golang-go against OTC
     parent: golang-go-test
-    vars:
     secrets:
       - cloud_config
     pre-run: playbooks/acceptance-pre.yaml
