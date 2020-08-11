@@ -18,5 +18,5 @@
     - include_role:
         name: revoke_token
       vars:
-        cloud: "{{ cloud_config }}"
+        cloud: "{{ functest_cloud_config }}"
         token: "{{ token_data.stdout }}"
