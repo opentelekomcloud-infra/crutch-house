@@ -4,10 +4,8 @@
       Base job for executing functional tests with golang-go against OTC
     parent: golang-go-test
     vars:
-
     secrets:
-      - name: test
-        secret: test
+      - functest_cloud_config
     pre-run: playbooks/acceptance-pre.yaml
     post-run: playbooks/acceptance-post.yaml
     timeout: 3000
