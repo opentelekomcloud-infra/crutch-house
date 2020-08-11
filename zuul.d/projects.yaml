@@ -2,8 +2,8 @@
     check:
       jobs:
         - golangci-lint
-        - crutch-house
+        - tox-functional
     gate:
       jobs:
         - golangci-lint
-        - crutch-house
+        - tox-functional
