@@ -7,6 +7,3 @@
       jobs:
         - golangci-lint
         - crutch-house
-    periodic:
-      jobs:
-        - crutch-house-master
