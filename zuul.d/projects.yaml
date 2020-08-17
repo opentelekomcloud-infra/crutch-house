@@ -2,8 +2,8 @@
     check:
       jobs:
         - golangci-lint
-        - tox-functional
+        - golang-functional
     gate:
       jobs:
         - golangci-lint
-        - tox-functional
+        - golang-functional
