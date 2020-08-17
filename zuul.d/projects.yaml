@@ -1,4 +1,8 @@
 - project:
+    vars:
+      go_command: "test"
+      go_package_dir: "./..."
+      go_install_dir: "/usr/local/go/bin"
     check:
       jobs:
         - golangci-lint
