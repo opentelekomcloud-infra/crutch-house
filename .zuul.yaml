@@ -16,11 +16,9 @@
       jobs:
         - golangci-lint
         - golang-functional
-        - golang-make:
+        - golang-make-functional:
             vars:
-              make_command: test
-              make_env:
-                OS_CLOUD: fake
+              make_command: acceptance
     gate:
       jobs:
         - golangci-lint
