@@ -15,11 +15,8 @@
     check:
       jobs:
         - golangci-lint
-        - golang-functional
-        - golang-make-functional:
-            vars:
-              make_command: acceptance
+        - golang-make-functional
     gate:
       jobs:
         - golangci-lint
-        - golang-functional
+        - golang-make-functional
