@@ -19,6 +19,8 @@
         - golang-make:
             vars:
               make_command: test
+              make_env:
+                OS_CLOUD: fake
     gate:
       jobs:
         - golangci-lint
