@@ -1,12 +1,3 @@
-#- job:
-#    name: crutch-house
-#    description: |
-#      Base job for executing functional tests with golang-go against OTC
-#    parent: golang-go-test
-#    pre-run: playbooks/acceptance-pre.yaml
-#    post-run: playbooks/acceptance-post.yaml
-#    timeout: 3000
-
 - project:
     vars:
       go_command: "test"
