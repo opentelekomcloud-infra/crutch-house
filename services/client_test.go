@@ -22,7 +22,7 @@ var (
 )
 
 func authClient(t *testing.T) Client {
-	client := NewClient(&clientconfig.ClientOpts{Cloud: "otc"})
+	client := NewClient(&clientconfig.ClientOpts{})
 	err := client.Authenticate()
 	require.NoError(t, err, authFailedMessage)
 	return client

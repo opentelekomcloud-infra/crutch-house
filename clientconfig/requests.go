@@ -24,6 +24,7 @@ package clientconfig
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"reflect"
@@ -236,16 +237,14 @@ func GetCloudFromYAML(opts *ClientOpts) (*Cloud, error) {
 			if err != nil {
 				return nil, fmt.Errorf("unable to load clouds-public.yaml: %s", err)
 			}
-
 			publicCloud, ok := publicClouds[profileName]
-			if !ok {
-				return nil, fmt.Errorf("cloud %s does not exist in clouds-public.yaml", profileName)
+			if ok {
+				cloud, err = mergeClouds(cloud, publicCloud)
+				if err != nil {
+					return nil, fmt.Errorf("could not merge information from clouds.yaml and clouds-public.yaml for cloud %s", profileName)
+				}
 			}
-
-			cloud, err = mergeClouds(cloud, publicCloud)
-			if err != nil {
-				return nil, fmt.Errorf("Could not merge information from clouds.yaml and clouds-public.yaml for cloud %s", profileName)
-			}
+			log.Printf("cloud %s does not exist in clouds-public.yaml\n", profileName)
 		}
 	}
 
@@ -272,12 +271,12 @@ func GetCloudFromYAML(opts *ClientOpts) (*Cloud, error) {
 			// if no entry in clouds.yaml was found and
 			// if a single-entry secureCloud wasn't used.
 			// At this point, no entry could be determined at all.
-			return nil, fmt.Errorf("Could not find cloud %s", cloudName)
+			return nil, fmt.Errorf("could not find cloud %s", cloudName)
 		}
 
 		// If secureCloud has content and it differs from the cloud entry,
 		// merge the two together.
-		if !reflect.DeepEqual((Cloud{}), secureCloud) && !reflect.DeepEqual(cloud, secureCloud) {
+		if !reflect.DeepEqual(Cloud{}, secureCloud) && !reflect.DeepEqual(cloud, secureCloud) {
 			cloud, err = mergeClouds(secureCloud, cloud)
 			if err != nil {
 				return nil, fmt.Errorf("unable to merge information from clouds.yaml and secure.yaml")
@@ -288,7 +287,7 @@ func GetCloudFromYAML(opts *ClientOpts) (*Cloud, error) {
 	// As an extra precaution, do one final check to see if cloud is nil.
 	// We shouldn't reach this point, though.
 	if cloud == nil {
-		return nil, fmt.Errorf("Could not find cloud %s", cloudName)
+		return nil, fmt.Errorf("could not find cloud %s", cloudName)
 	}
 
 	// Default is to verify SSL API requests
