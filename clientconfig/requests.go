@@ -84,6 +84,8 @@ type YAMLOptsBuilder interface {
 	LoadPublicCloudsYAML() (map[string]Cloud, error)
 }
 
+const getCloudFailedMessage = "could not find cloud %s"
+
 // YAMLOpts represents options and methods to load a clouds.yaml file.
 type YAMLOpts struct {
 	// By default, no options are specified.
@@ -243,8 +245,9 @@ func GetCloudFromYAML(opts *ClientOpts) (*Cloud, error) {
 				if err != nil {
 					return nil, fmt.Errorf("could not merge information from clouds.yaml and clouds-public.yaml for cloud %s", profileName)
 				}
+			} else {
+				log.Printf("cloud %s does not exist in clouds-public.yaml\n", profileName)
 			}
-			log.Printf("cloud %s does not exist in clouds-public.yaml\n", profileName)
 		}
 	}
 
@@ -271,12 +274,27 @@ func GetCloudFromYAML(opts *ClientOpts) (*Cloud, error) {
 			// if no entry in clouds.yaml was found and
 			// if a single-entry secureCloud wasn't used.
 			// At this point, no entry could be determined at all.
-			return nil, fmt.Errorf("could not find cloud %s", cloudName)
+			return nil, fmt.Errorf(getCloudFailedMessage, cloudName)
 		}
 
 		// If secureCloud has content and it differs from the cloud entry,
 		// merge the two together.
-		if !reflect.DeepEqual(Cloud{}, secureCloud) && !reflect.DeepEqual(cloud, secureCloud) {
+		var emptyCloud = Cloud{
+			Cloud:              "",
+			Profile:            "",
+			AuthInfo:           nil,
+			RegionName:         "",
+			Regions:            nil,
+			EndpointType:       "",
+			Interface:          "",
+			IdentityAPIVersion: "",
+			VolumeAPIVersion:   "",
+			Verify:             nil,
+			CACertFile:         "",
+			ClientCertFile:     "",
+			ClientKeyFile:      "",
+		}
+		if !reflect.DeepEqual(emptyCloud, secureCloud) && !reflect.DeepEqual(cloud, secureCloud) {
 			cloud, err = mergeClouds(secureCloud, cloud)
 			if err != nil {
 				return nil, fmt.Errorf("unable to merge information from clouds.yaml and secure.yaml")
@@ -287,7 +305,7 @@ func GetCloudFromYAML(opts *ClientOpts) (*Cloud, error) {
 	// As an extra precaution, do one final check to see if cloud is nil.
 	// We shouldn't reach this point, though.
 	if cloud == nil {
-		return nil, fmt.Errorf("could not find cloud %s", cloudName)
+		return nil, fmt.Errorf(getCloudFailedMessage, cloudName)
 	}
 
 	// Default is to verify SSL API requests
