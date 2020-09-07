@@ -84,7 +84,7 @@ type YAMLOptsBuilder interface {
 	LoadPublicCloudsYAML() (map[string]Cloud, error)
 }
 
-const cloudNotFound = "could not find cloud %s"
+const cloudNotFound = "could not find cloud %s in %s"
 
 // YAMLOpts represents options and methods to load a clouds.yaml file.
 type YAMLOpts struct {
@@ -192,6 +192,17 @@ func GetCloudFromYAML(opts *ClientOpts) (*Cloud, error) {
 	if err != nil {
 		return nil, fmt.Errorf("unable to load clouds.yaml: %s", err)
 	}
+	publicClouds, err := yamlOpts.LoadPublicCloudsYAML()
+	if err != nil {
+		return nil, fmt.Errorf("unable to load clouds-public.yaml: %s", err)
+	}
+
+	// Next, load a secure clouds file and see if a cloud entry
+	// can be found or merged.
+	secureClouds, err := yamlOpts.LoadSecureCloudsYAML()
+	if err != nil {
+		return nil, fmt.Errorf("unable to load secure.yaml: %s", err)
+	}
 
 	// Determine which cloud to use.
 	// First see if a cloud name was explicitly set in opts.
@@ -212,10 +223,9 @@ func GetCloudFromYAML(opts *ClientOpts) (*Cloud, error) {
 	}
 
 	var cloud *Cloud
-	if cloudName != "" {
-		v, ok := clouds[cloudName]
+	if v, ok := clouds[cloudName]; ok {
 		if !ok {
-			return nil, fmt.Errorf("cloud %s does not exist in clouds.yaml", cloudName)
+			return nil, fmt.Errorf(cloudNotFound, cloudName, "clouds.yaml")
 		}
 		cloud = &v
 	}
@@ -228,69 +238,45 @@ func GetCloudFromYAML(opts *ClientOpts) (*Cloud, error) {
 		}
 	}
 
-	if cloud != nil {
+	if publicClouds != nil && cloud != nil {
 		// A profile points to a public cloud entry.
 		// If one was specified, load a list of public clouds
 		// and then merge the information with the current cloud data.
 		profileName := defaultIfEmpty(cloud.Profile, cloud.Cloud)
 
-		if profileName != "" {
-			publicClouds, err := yamlOpts.LoadPublicCloudsYAML()
+		if publicCloud, ok := publicClouds[profileName]; ok {
+			cloud, err = mergeClouds(publicCloud, cloud)
 			if err != nil {
-				return nil, fmt.Errorf("unable to load clouds-public.yaml: %s", err)
+				return nil, fmt.Errorf("unable to merge information from clouds.yaml and clouds-public.yaml")
 			}
-			publicCloud, ok := publicClouds[profileName]
-			if ok {
-				cloud, err = mergeClouds(cloud, publicCloud)
-				if err != nil {
-					return nil, fmt.Errorf("could not merge information from clouds.yaml and clouds-public.yaml for cloud %s", profileName)
-				}
-			} else {
-				log.Printf("cloud %s does not exist in clouds-public.yaml\n", profileName)
-			}
+		} else {
+			log.Printf(cloudNotFound, profileName, "clouds-public.yaml")
 		}
 	}
 
 	// Next, load a secure clouds file and see if a cloud entry
 	// can be found or merged.
-	secureClouds, err := yamlOpts.LoadSecureCloudsYAML()
-	if err != nil {
-		return nil, fmt.Errorf("unable to load secure.yaml: %s", err)
-	}
-
 	if secureClouds != nil {
-		// If no entry was found in clouds.yaml, no cloud name was specified,
-		// and only one secureCloud entry exists, use that as the cloud entry.
-		if cloud == nil && cloudName == "" && len(secureClouds) == 1 {
-			for _, v := range secureClouds {
-				cloud = &v
-			}
-		}
 
-		// Otherwise, see if the provided cloud name exists in the secure yaml file.
-		secureCloud, ok := secureClouds[cloudName]
-		if !ok && cloud == nil {
-			// cloud == nil serves two purposes here:
-			// if no entry in clouds.yaml was found and
-			// if a single-entry secureCloud wasn't used.
-			// At this point, no entry could be determined at all.
-			return nil, fmt.Errorf(cloudNotFound, cloudName)
-		}
+		if secureCloud, ok := secureClouds[cloudName]; ok {
 
-		// If secureCloud has content and it differs from the cloud entry,
-		// merge the two together.
-		if !reflect.DeepEqual(Cloud{}, secureCloud) && !reflect.DeepEqual(cloud, secureCloud) {
-			cloud, err = mergeClouds(secureCloud, cloud)
-			if err != nil {
-				return nil, fmt.Errorf("unable to merge information from clouds.yaml and secure.yaml")
+			// If secureCloud has content and it differs from the cloud entry,
+			// merge the two together.
+			if !reflect.DeepEqual(Cloud{}, secureCloud) && !reflect.DeepEqual(cloud, secureCloud) {
+				cloud, err = mergeClouds(secureCloud, cloud)
+				if err != nil {
+					return nil, fmt.Errorf("unable to merge information from clouds.yaml and secure.yaml")
+				}
 			}
+		} else {
+			log.Printf(cloudNotFound, cloudName, "secure.yaml")
 		}
 	}
 
 	// As an extra precaution, do one final check to see if cloud is nil.
 	// We shouldn't reach this point, though.
 	if cloud == nil {
-		return nil, fmt.Errorf(cloudNotFound, cloudName)
+		return nil, fmt.Errorf(cloudNotFound, cloudName, "clouds.yaml")
 	}
 
 	// Default is to verify SSL API requests
