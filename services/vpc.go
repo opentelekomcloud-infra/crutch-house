@@ -9,6 +9,7 @@ import (
 	"github.com/huaweicloud/golangsdk/openstack/networking/v1/vpcs"
 
 	"github.com/opentelekomcloud-infra/crutch-house/clientconfig"
+	"github.com/opentelekomcloud-infra/crutch-house/utils"
 )
 
 const (
@@ -68,7 +69,7 @@ func (c *client) FindVPC(vpcName string) (string, error) {
 
 // WaitForVPCStatus waits until VPC is in given status
 func (c *client) WaitForVPCStatus(vpcID, status string) error {
-	return WaitForSpecificOrError(func() (b bool, err error) {
+	return utils.WaitForSpecificOrError(func() (b bool, err error) {
 		cur, err := c.GetVPCDetails(vpcID)
 		if err != nil {
 			return true, err
@@ -127,7 +128,7 @@ func (c *client) GetSubnetStatus(subnetID string) (*subnets.Subnet, error) {
 
 // WaitForSubnetStatus waits for subnet to be in given status
 func (c *client) WaitForSubnetStatus(subnetID string, status string) error {
-	return WaitForSpecificOrError(func() (b bool, err error) {
+	return utils.WaitForSpecificOrError(func() (b bool, err error) {
 		curStatus, err := c.GetSubnetStatus(subnetID)
 		if err != nil {
 			return true, err

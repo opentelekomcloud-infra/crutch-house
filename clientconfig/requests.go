@@ -192,13 +192,6 @@ func GetCloudFromYAML(opts *ClientOpts) (*Cloud, error) {
 		return nil, fmt.Errorf("unable to load clouds.yaml: %s", err)
 	}
 
-	// Next, load a secure clouds file and see if a cloud entry
-	// can be found or merged.
-	secureClouds, err := yamlOpts.LoadSecureCloudsYAML()
-	if err != nil {
-		return nil, fmt.Errorf("unable to load secure.yaml: %s", err)
-	}
-
 	// Determine which cloud to use.
 	// First see if a cloud name was explicitly set in opts.
 	var cloudName string
@@ -217,7 +210,7 @@ func GetCloudFromYAML(opts *ClientOpts) (*Cloud, error) {
 		cloudName = v
 	}
 
-	var cloud *Cloud
+	cloud := &Cloud{}
 	// If a cloud was not specified, and clouds only contains
 	// a single entry, use that entry.
 	if cloudName == "" && len(clouds) == 1 {
@@ -231,6 +224,13 @@ func GetCloudFromYAML(opts *ClientOpts) (*Cloud, error) {
 		cloud = &v
 	} else {
 		log.Printf(cloudNotFound, cloudName, "clouds.yaml")
+	}
+
+	// Next, load a secure clouds file and see if a cloud entry
+	// can be found or merged.
+	secureClouds, err := yamlOpts.LoadSecureCloudsYAML()
+	if err != nil {
+		return nil, fmt.Errorf("unable to load secure.yaml: %s", err)
 	}
 
 	if secureClouds != nil {
@@ -267,18 +267,6 @@ func GetCloudFromYAML(opts *ClientOpts) (*Cloud, error) {
 		}
 	}
 
-	// As an extra precaution, do one final check to see if cloud is nil.
-	// We shouldn't reach this point, though.
-	if cloud == nil {
-		return nil, fmt.Errorf(cloudNotFound, cloudName, "clouds.yaml")
-	}
-
-	// Default is to verify SSL API requests
-	if cloud.Verify == nil {
-		iTrue := true
-		cloud.Verify = &iTrue
-	}
-
 	// TODO: this is where reading vendor files should go be considered when not found in
 	// clouds-public.yml
 	// https://github.com/openstack/openstacksdk/tree/master/openstack/config/vendors
@@ -297,7 +285,7 @@ func GetCloudFromYAML(opts *ClientOpts) (*Cloud, error) {
 	return cloud, nil
 }
 
-// AuthOptions creates a gophercloud.AuthOptions structure with the
+// AuthOptions creates a structure with the
 // settings found in a specific cloud entry of a clouds.yaml file or
 // based on authentication settings given in ClientOpts.
 //
@@ -333,6 +321,11 @@ func AuthOptions(opts *ClientOpts) (huaweisdk.AuthOptionsProvider, error) {
 		}
 	}
 
+	// Default is to verify SSL API requests
+	if cloud.Verify == nil {
+		iTrue := true
+		cloud.Verify = &iTrue
+	}
 	if cloud.RegionName == "" {
 		cloud.RegionName = opts.RegionName
 	}
