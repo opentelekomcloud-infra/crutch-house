@@ -218,13 +218,6 @@ func GetCloudFromYAML(opts *ClientOpts) (*Cloud, error) {
 	}
 
 	var cloud *Cloud
-	if v, ok := clouds[cloudName]; ok {
-		if !ok {
-			return nil, fmt.Errorf(cloudNotFound, cloudName, "clouds.yaml")
-		}
-		cloud = &v
-	}
-
 	// If a cloud was not specified, and clouds only contains
 	// a single entry, use that entry.
 	if cloudName == "" && len(clouds) == 1 {
@@ -232,6 +225,12 @@ func GetCloudFromYAML(opts *ClientOpts) (*Cloud, error) {
 			cloud = &v
 			cloudName = k
 		}
+	}
+
+	if v, ok := clouds[cloudName]; ok {
+		cloud = &v
+	} else {
+		log.Printf(cloudNotFound, cloudName, "clouds.yaml")
 	}
 
 	if secureClouds != nil {
