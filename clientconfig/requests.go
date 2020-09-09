@@ -27,7 +27,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"reflect"
 	"strings"
 
 	huaweisdk "github.com/huaweicloud/golangsdk"
@@ -192,10 +191,6 @@ func GetCloudFromYAML(opts *ClientOpts) (*Cloud, error) {
 	if err != nil {
 		return nil, fmt.Errorf("unable to load clouds.yaml: %s", err)
 	}
-	publicClouds, err := yamlOpts.LoadPublicCloudsYAML()
-	if err != nil {
-		return nil, fmt.Errorf("unable to load clouds-public.yaml: %s", err)
-	}
 
 	// Next, load a secure clouds file and see if a cloud entry
 	// can be found or merged.
@@ -238,38 +233,37 @@ func GetCloudFromYAML(opts *ClientOpts) (*Cloud, error) {
 		}
 	}
 
-	if publicClouds != nil && cloud != nil {
-		// A profile points to a public cloud entry.
-		// If one was specified, load a list of public clouds
-		// and then merge the information with the current cloud data.
-		profileName := defaultIfEmpty(cloud.Profile, cloud.Cloud)
-
-		if publicCloud, ok := publicClouds[profileName]; ok {
-			cloud, err = mergeClouds(publicCloud, cloud)
-			if err != nil {
-				return nil, fmt.Errorf("unable to merge information from clouds.yaml and clouds-public.yaml")
-			}
-		} else {
-			log.Printf(cloudNotFound, profileName, "clouds-public.yaml")
-		}
-	}
-
-	// Next, load a secure clouds file and see if a cloud entry
-	// can be found or merged.
 	if secureClouds != nil {
-
 		if secureCloud, ok := secureClouds[cloudName]; ok {
-
-			// If secureCloud has content and it differs from the cloud entry,
-			// merge the two together.
-			if !reflect.DeepEqual(Cloud{}, secureCloud) && !reflect.DeepEqual(cloud, secureCloud) {
-				cloud, err = mergeClouds(secureCloud, cloud)
-				if err != nil {
-					return nil, fmt.Errorf("unable to merge information from clouds.yaml and secure.yaml")
-				}
+			cloud, err = mergeClouds(secureCloud, cloud)
+			if err != nil {
+				return nil, fmt.Errorf("unable to merge information from clouds.yaml and secure.yaml")
 			}
 		} else {
 			log.Printf(cloudNotFound, cloudName, "secure.yaml")
+		}
+	}
+	profileName := defaultIfEmpty(cloud.Profile, cloud.Cloud)
+
+	// If profile name exists then merge with clouds.yaml
+	if profileName != "" {
+		// A profile points to a public cloud entry.
+		// If one was specified, load a list of public clouds
+		// and then merge the information with the current cloud data.
+		publicClouds, err := yamlOpts.LoadPublicCloudsYAML()
+		if err != nil {
+			return nil, fmt.Errorf("unable to load clouds-public.yaml: %s", err)
+		}
+
+		if publicClouds != nil {
+			if publicCloud, ok := publicClouds[profileName]; ok {
+				cloud, err = mergeClouds(publicCloud, cloud)
+				if err != nil {
+					return nil, fmt.Errorf("unable to merge information from clouds.yaml and clouds-public.yaml")
+				}
+			} else {
+				log.Printf(cloudNotFound, profileName, "clouds-public.yaml")
+			}
 		}
 	}
 
