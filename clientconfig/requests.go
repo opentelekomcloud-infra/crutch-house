@@ -228,8 +228,9 @@ func GetCloudFromYAML(opts *ClientOpts) (*Cloud, error) {
 	// If a cloud was not specified, and clouds only contains
 	// a single entry, use that entry.
 	if cloudName == "" && len(clouds) == 1 {
-		for _, v := range clouds {
+		for k, v := range clouds {
 			cloud = &v
+			cloudName = k
 		}
 	}
 
@@ -313,32 +314,10 @@ func AuthOptions(opts *ClientOpts) (huaweisdk.AuthOptionsProvider, error) {
 		opts = new(ClientOpts)
 	}
 
-	// Determine if a clouds.yaml entry should be retrieved.
-	// Start by figuring out the cloud name.
-	// First check if one was explicitly specified in opts.
-	var cloudName string
-	if opts.Cloud != "" {
-		cloudName = opts.Cloud
-	}
-
-	// Next see if a cloud name was specified as an environment variable.
-	envPrefix := "OS_"
-	if opts.EnvPrefix != "" {
-		envPrefix = opts.EnvPrefix
-	}
-
-	if v := os.Getenv(envPrefix + "CLOUD"); v != "" {
-		cloudName = v
-	}
-
-	// If a cloud name was determined, try to look it up in clouds.yaml.
-	if cloudName != "" {
-		// Get the requested cloud.
-		var err error
-		cloud, err = GetCloudFromYAML(opts)
-		if err != nil {
-			return nil, err
-		}
+	// Get the requested cloud.
+	cloud, err := GetCloudFromYAML(opts)
+	if err != nil {
+		return nil, err
 	}
 
 	// If cloud.AuthInfo is nil, then no cloud was specified.
