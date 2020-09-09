@@ -246,7 +246,7 @@ func GetCloudFromYAML(opts *ClientOpts) (*Cloud, error) {
 	profileName := defaultIfEmpty(cloud.Profile, cloud.Cloud)
 
 	// If profile name exists then merge with clouds.yaml
-	if profileName != "" {
+	if profileName != "" || cloud.AuthInfo == nil {
 		// A profile points to a public cloud entry.
 		// If one was specified, load a list of public clouds
 		// and then merge the information with the current cloud data.
