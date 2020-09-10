@@ -24,9 +24,9 @@ package clientconfig
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
-	"reflect"
 	"strings"
 
 	huaweisdk "github.com/huaweicloud/golangsdk"
@@ -82,6 +82,8 @@ type YAMLOptsBuilder interface {
 	LoadSecureCloudsYAML() (map[string]Cloud, error)
 	LoadPublicCloudsYAML() (map[string]Cloud, error)
 }
+
+const cloudNotFound = "could not find cloud %s in %s"
 
 // YAMLOpts represents options and methods to load a clouds.yaml file.
 type YAMLOpts struct {
@@ -208,45 +210,20 @@ func GetCloudFromYAML(opts *ClientOpts) (*Cloud, error) {
 		cloudName = v
 	}
 
-	var cloud *Cloud
-	if cloudName != "" {
-		v, ok := clouds[cloudName]
-		if !ok {
-			return nil, fmt.Errorf("cloud %s does not exist in clouds.yaml", cloudName)
-		}
-		cloud = &v
-	}
-
+	cloud := &Cloud{}
 	// If a cloud was not specified, and clouds only contains
 	// a single entry, use that entry.
 	if cloudName == "" && len(clouds) == 1 {
-		for _, v := range clouds {
+		for k, v := range clouds {
 			cloud = &v
+			cloudName = k
 		}
 	}
 
-	if cloud != nil {
-		// A profile points to a public cloud entry.
-		// If one was specified, load a list of public clouds
-		// and then merge the information with the current cloud data.
-		profileName := defaultIfEmpty(cloud.Profile, cloud.Cloud)
-
-		if profileName != "" {
-			publicClouds, err := yamlOpts.LoadPublicCloudsYAML()
-			if err != nil {
-				return nil, fmt.Errorf("unable to load clouds-public.yaml: %s", err)
-			}
-
-			publicCloud, ok := publicClouds[profileName]
-			if !ok {
-				return nil, fmt.Errorf("cloud %s does not exist in clouds-public.yaml", profileName)
-			}
-
-			cloud, err = mergeClouds(cloud, publicCloud)
-			if err != nil {
-				return nil, fmt.Errorf("Could not merge information from clouds.yaml and clouds-public.yaml for cloud %s", profileName)
-			}
-		}
+	if v, ok := clouds[cloudName]; ok {
+		cloud = &v
+	} else {
+		log.Printf(cloudNotFound, cloudName, "clouds.yaml")
 	}
 
 	// Next, load a secure clouds file and see if a cloud entry
@@ -257,44 +234,37 @@ func GetCloudFromYAML(opts *ClientOpts) (*Cloud, error) {
 	}
 
 	if secureClouds != nil {
-		// If no entry was found in clouds.yaml, no cloud name was specified,
-		// and only one secureCloud entry exists, use that as the cloud entry.
-		if cloud == nil && cloudName == "" && len(secureClouds) == 1 {
-			for _, v := range secureClouds {
-				cloud = &v
-			}
-		}
-
-		// Otherwise, see if the provided cloud name exists in the secure yaml file.
-		secureCloud, ok := secureClouds[cloudName]
-		if !ok && cloud == nil {
-			// cloud == nil serves two purposes here:
-			// if no entry in clouds.yaml was found and
-			// if a single-entry secureCloud wasn't used.
-			// At this point, no entry could be determined at all.
-			return nil, fmt.Errorf("Could not find cloud %s", cloudName)
-		}
-
-		// If secureCloud has content and it differs from the cloud entry,
-		// merge the two together.
-		if !reflect.DeepEqual((Cloud{}), secureCloud) && !reflect.DeepEqual(cloud, secureCloud) {
+		if secureCloud, ok := secureClouds[cloudName]; ok {
 			cloud, err = mergeClouds(secureCloud, cloud)
 			if err != nil {
 				return nil, fmt.Errorf("unable to merge information from clouds.yaml and secure.yaml")
 			}
+		} else {
+			log.Printf(cloudNotFound, cloudName, "secure.yaml")
 		}
 	}
+	profileName := defaultIfEmpty(cloud.Profile, cloud.Cloud)
 
-	// As an extra precaution, do one final check to see if cloud is nil.
-	// We shouldn't reach this point, though.
-	if cloud == nil {
-		return nil, fmt.Errorf("Could not find cloud %s", cloudName)
-	}
+	// If profile name exists then merge with clouds.yaml
+	if profileName != "" {
+		// A profile points to a public cloud entry.
+		// If one was specified, load a list of public clouds
+		// and then merge the information with the current cloud data.
+		publicClouds, err := yamlOpts.LoadPublicCloudsYAML()
+		if err != nil {
+			return nil, fmt.Errorf("unable to load clouds-public.yaml: %s", err)
+		}
 
-	// Default is to verify SSL API requests
-	if cloud.Verify == nil {
-		iTrue := true
-		cloud.Verify = &iTrue
+		if publicClouds != nil {
+			if publicCloud, ok := publicClouds[profileName]; ok {
+				cloud, err = mergeClouds(publicCloud, cloud)
+				if err != nil {
+					return nil, fmt.Errorf("unable to merge information from clouds.yaml and clouds-public.yaml")
+				}
+			} else {
+				log.Printf(cloudNotFound, profileName, "clouds-public.yaml")
+			}
+		}
 	}
 
 	// TODO: this is where reading vendor files should go be considered when not found in
@@ -315,7 +285,7 @@ func GetCloudFromYAML(opts *ClientOpts) (*Cloud, error) {
 	return cloud, nil
 }
 
-// AuthOptions creates a gophercloud.AuthOptions structure with the
+// AuthOptions creates a structure with the
 // settings found in a specific cloud entry of a clouds.yaml file or
 // based on authentication settings given in ClientOpts.
 //
@@ -331,32 +301,10 @@ func AuthOptions(opts *ClientOpts) (huaweisdk.AuthOptionsProvider, error) {
 		opts = new(ClientOpts)
 	}
 
-	// Determine if a clouds.yaml entry should be retrieved.
-	// Start by figuring out the cloud name.
-	// First check if one was explicitly specified in opts.
-	var cloudName string
-	if opts.Cloud != "" {
-		cloudName = opts.Cloud
-	}
-
-	// Next see if a cloud name was specified as an environment variable.
-	envPrefix := "OS_"
-	if opts.EnvPrefix != "" {
-		envPrefix = opts.EnvPrefix
-	}
-
-	if v := os.Getenv(envPrefix + "CLOUD"); v != "" {
-		cloudName = v
-	}
-
-	// If a cloud name was determined, try to look it up in clouds.yaml.
-	if cloudName != "" {
-		// Get the requested cloud.
-		var err error
-		cloud, err = GetCloudFromYAML(opts)
-		if err != nil {
-			return nil, err
-		}
+	// Get the requested cloud.
+	cloud, err := GetCloudFromYAML(opts)
+	if err != nil {
+		return nil, err
 	}
 
 	// If cloud.AuthInfo is nil, then no cloud was specified.
@@ -373,6 +321,11 @@ func AuthOptions(opts *ClientOpts) (huaweisdk.AuthOptionsProvider, error) {
 		}
 	}
 
+	// Default is to verify SSL API requests
+	if cloud.Verify == nil {
+		iTrue := true
+		cloud.Verify = &iTrue
+	}
 	if cloud.RegionName == "" {
 		cloud.RegionName = opts.RegionName
 	}

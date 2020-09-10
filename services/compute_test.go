@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/opentelekomcloud-infra/crutch-house/ssh"
+	"github.com/opentelekomcloud-infra/crutch-house/utils"
 )
 
 const (
@@ -20,8 +21,8 @@ const (
 )
 
 var (
-	kpName     = RandomString(12, "kp-")
-	serverName = RandomString(16, "machine-")
+	kpName     = utils.RandomString(12, "kp-")
+	serverName = utils.RandomString(16, "machine-")
 	eipOptions = &ElasticIPOpts{
 		IPType:        "5_bgp",
 		BandwidthSize: 2,

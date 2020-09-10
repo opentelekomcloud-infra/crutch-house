@@ -8,6 +8,8 @@ import (
 	"github.com/huaweicloud/golangsdk/openstack/cce/v3/nodes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/opentelekomcloud-infra/crutch-house/utils"
 )
 
 func initCCE(t *testing.T, client Client) {
@@ -34,7 +36,7 @@ func TestClient_ClusterLifecycle(t *testing.T) {
 	require.NoError(t, err)
 	defer func() { _ = client.DeleteFloatingIP(ip.PublicAddress) }()
 
-	clusterName := RandomString(10, "crutch-", "0123456789abcdefghijklmnopqrstuvwxyz")
+	clusterName := utils.RandomString(10, "crutch-", "0123456789abcdefghijklmnopqrstuvwxyz")
 	opts := &CreateClusterOpts{
 		Name:               clusterName,
 		ClusterType:        ClusterTypeECS,

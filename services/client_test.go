@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/opentelekomcloud-infra/crutch-house/clientconfig"
+	"github.com/opentelekomcloud-infra/crutch-house/utils"
 )
 
 const (
@@ -16,13 +17,13 @@ const (
 )
 
 var (
-	vpcName    = RandomString(12, "vpc-")
-	subnetName = RandomString(16, "subnet-")
-	sgName     = RandomString(12, "sg-")
+	vpcName    = utils.RandomString(12, "vpc-")
+	subnetName = utils.RandomString(16, "subnet-")
+	sgName     = utils.RandomString(12, "sg-")
 )
 
 func authClient(t *testing.T) Client {
-	client := NewClient(&clientconfig.ClientOpts{Cloud: "otc"})
+	client := NewClient(&clientconfig.ClientOpts{})
 	err := client.Authenticate()
 	require.NoError(t, err, authFailedMessage)
 	return client

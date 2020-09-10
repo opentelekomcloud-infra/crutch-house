@@ -136,10 +136,24 @@ func FindAndReadCloudsYAML() (string, []byte, error) {
 }
 
 func FindAndReadPublicCloudsYAML() (string, []byte, error) {
+	// OS_CLIENT_VENDOR_FILE
+	if v := os.Getenv("OS_CLIENT_VENDOR_FILE"); v != "" {
+		if ok := fileExists(v); ok {
+			content, err := ioutil.ReadFile(v)
+			return v, content, err
+		}
+	}
 	return FindAndReadYAML("clouds-public.yaml")
 }
 
 func FindAndReadSecureCloudsYAML() (string, []byte, error) {
+	// OS_CLIENT_SECURE_FILE
+	if v := os.Getenv("OS_CLIENT_SECURE_FILE"); v != "" {
+		if ok := fileExists(v); ok {
+			content, err := ioutil.ReadFile(v)
+			return v, content, err
+		}
+	}
 	return FindAndReadYAML("secure.yaml")
 }
 
