@@ -10,6 +10,19 @@ import (
 	"github.com/opentelekomcloud-infra/crutch-house/utils"
 )
 
+const (
+	cloudsPath = "/tmp/%s.yaml"
+
+	osAuthUrl     = "http://url-from-clouds.yaml"
+	osProjectName = "eu-de"
+	osUsername    = "otc"
+	osPassword    = "Qwerty123!"
+	osDomainName  = "OTC987414257102518"
+
+	osAuthUrl2  = "http://url-from-clouds-public.yaml"
+	osPassword2 = "SecuredPa$$w0rd1@"
+)
+
 func TestGetCloudFromYAML_emptyAll(t *testing.T) {
 
 	cloudsYamlPath := fmt.Sprintf("/tmp/%s.yaml", utils.RandomString(10, "clouds"))
@@ -25,22 +38,15 @@ func TestGetCloudFromYAML_emptyAll(t *testing.T) {
 }
 
 func TestGetCloudFromPublic(t *testing.T) {
-	cloudsYamlPath := fmt.Sprintf("/tmp/%s.yaml", utils.RandomString(10, "clouds"))
-	cloudsPublicYamlPath := fmt.Sprintf("/tmp/%s.yaml", utils.RandomString(15, "clouds-public"))
+	cloudsYamlPath := fmt.Sprintf(cloudsPath, utils.RandomString(10, "clouds"))
+	cloudsPublicYamlPath := fmt.Sprintf(cloudsPath, utils.RandomString(15, "clouds-public"))
 
 	_ = os.Setenv("OS_CLIENT_CONFIG_FILE", cloudsYamlPath)
 	_ = os.Setenv("OS_CLIENT_VENDOR_FILE", cloudsPublicYamlPath)
 	_ = os.Setenv("OS_CLOUD", "test")
 
-	var osAuthUrl = "http://url-from-clouds.yaml"
-	var osProjectName = "eu-de"
-	var osUsername = "otc"
-	var osPassword = "Qwerty123!"
-	var osDomainName = "OTC987414257102518"
-	cloudsTemplate := cloudsYamlTemplate(osAuthUrl, osProjectName, osUsername, osDomainName, osPassword)
-
-	var osAuthUrlPublic = "http://url-from-clouds-public.yaml"
-	cloudsPublicTemplate := cloudsPublicYamlTemplate(osAuthUrlPublic)
+	cloudsTemplate := cloudsYamlTemplate
+	cloudsPublicTemplate := cloudsPublicYamlTemplate
 
 	f, err := os.Create(cloudsYamlPath)
 	require.NoError(t, err)
@@ -62,27 +68,18 @@ func TestGetCloudFromPublic(t *testing.T) {
 }
 
 func TestGetCloudFromAllClouds(t *testing.T) {
-	cloudsYamlPath := fmt.Sprintf("/tmp/%s.yaml", utils.RandomString(10, "clouds"))
-	cloudsPublicYamlPath := fmt.Sprintf("/tmp/%s.yaml", utils.RandomString(15, "clouds-public"))
-	cloudsSecureYamlPath := fmt.Sprintf("/tmp/%s.yaml", utils.RandomString(10, "secure"))
+	cloudsYamlPath := fmt.Sprintf(cloudsPath, utils.RandomString(10, "clouds"))
+	cloudsPublicYamlPath := fmt.Sprintf(cloudsPath, utils.RandomString(15, "clouds-public"))
+	cloudsSecureYamlPath := fmt.Sprintf(cloudsPath, utils.RandomString(10, "secure"))
 
 	_ = os.Setenv("OS_CLIENT_CONFIG_FILE", cloudsYamlPath)
 	_ = os.Setenv("OS_CLIENT_VENDOR_FILE", cloudsPublicYamlPath)
 	_ = os.Setenv("OS_CLIENT_Secure_FILE", cloudsSecureYamlPath)
 	_ = os.Setenv("OS_CLOUD", "test")
 
-	var osAuthUrl = "http://url-from-clouds.yaml"
-	var osProjectName = "eu-de"
-	var osUsername = "otc"
-	var osPassword = "Qwerty123!"
-	var osDomainName = "OTC987414257102518"
-	cloudsTemplate := cloudsYamlTemplate(osAuthUrl, osProjectName, osUsername, osDomainName, osPassword)
-
-	var osAuthUrlPublic = "http://url-from-clouds-public.yaml"
-	cloudsPublicTemplate := cloudsPublicYamlTemplate(osAuthUrlPublic)
-
-	var password = "SecuredPa$$w0rd1@"
-	cloudsSecureTemplate := cloudsSecureYamlTemplate(password)
+	cloudsTemplate := cloudsYamlTemplate
+	cloudsPublicTemplate := cloudsPublicYamlTemplate
+	cloudsSecureTemplate := cloudsSecureYamlTemplate
 
 	f, err := os.Create(cloudsYamlPath)
 	require.NoError(t, err)
@@ -108,8 +105,7 @@ func TestGetCloudFromAllClouds(t *testing.T) {
 	require.Contains(t, cl.AuthInfo.Password, "SecuredPa$$w0rd1")
 }
 
-func cloudsYamlTemplate(authUrl, projectName, userName, domainName, password string) string {
-	return fmt.Sprintf(`
+var cloudsYamlTemplate = fmt.Sprintf(`
 clouds:
   test:
     profile: "otc"
@@ -119,23 +115,18 @@ clouds:
       username: "%s"
       user_domain_name: "%s"
       password: "%s"
-`, authUrl, projectName, userName, domainName, password)
-}
+`, osAuthUrl, osProjectName, osUsername, osDomainName, osPassword)
 
-func cloudsPublicYamlTemplate(authUrl string) string {
-	return fmt.Sprintf(`
+var cloudsPublicYamlTemplate = fmt.Sprintf(`
 public-clouds:
   otc:
     auth:
       auth_url: "%s"
-`, authUrl)
-}
+`, osAuthUrl2)
 
-func cloudsSecureYamlTemplate(password string) string {
-	return fmt.Sprintf(`
+var cloudsSecureYamlTemplate = fmt.Sprintf(`
 clouds:
   test:
     auth:
       password: "%s"
-`, password)
-}
+`, osPassword2)
