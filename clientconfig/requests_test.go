@@ -25,12 +25,7 @@ const (
 
 func TestGetCloudFromYAML_emptyAll(t *testing.T) {
 
-	cloudsYamlPath := fmt.Sprintf("/tmp/%s.yaml", utils.RandomString(10, "clouds"))
-	secureYamlPath := fmt.Sprintf("/tmp/%s.yaml", utils.RandomString(10, "secure"))
-
-	_ = os.Setenv("OS_CLIENT_CONFIG_FILE", cloudsYamlPath)
-	_ = os.Setenv("OS_CLIENT_SECURE_FILE", secureYamlPath)
-	_ = os.Setenv("OS_CLOUD", "test-me")
+	_, _, _ = createCloudsPathsSetEnvs()
 
 	cl, err := GetCloudFromYAML(&ClientOpts{})
 	require.NoError(t, err)
