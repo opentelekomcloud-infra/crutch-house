@@ -37,7 +37,7 @@ func TestGetCloudFromPublic(t *testing.T) {
 	var osUsername = "otc"
 	var osPassword = "Qwerty123!"
 	var osDomainName = "OTC987414257102518"
-	cloudsTemplate := cloudsYamlTemplate(osAuthUrl, osProjectName, osUsername, osPassword, osDomainName)
+	cloudsTemplate := cloudsYamlTemplate(osAuthUrl, osProjectName, osUsername, osDomainName, osPassword)
 
 	var osAuthUrlPublic = "http://url-from-clouds-public.yaml"
 	cloudsPublicTemplate := cloudsPublicYamlTemplate(osAuthUrlPublic)
@@ -76,7 +76,7 @@ func TestGetCloudFromAllClouds(t *testing.T) {
 	var osUsername = "otc"
 	var osPassword = "Qwerty123!"
 	var osDomainName = "OTC987414257102518"
-	cloudsTemplate := cloudsYamlTemplate(osAuthUrl, osProjectName, osUsername, osPassword, osDomainName)
+	cloudsTemplate := cloudsYamlTemplate(osAuthUrl, osProjectName, osUsername, osDomainName, osPassword)
 
 	var osAuthUrlPublic = "http://url-from-clouds-public.yaml"
 	cloudsPublicTemplate := cloudsPublicYamlTemplate(osAuthUrlPublic)
