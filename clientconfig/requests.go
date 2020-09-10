@@ -219,17 +219,6 @@ func GetCloudFromYAML(opts *ClientOpts) (*Cloud, error) {
 			cloudName = k
 		}
 	}
-	log.Println("------cloud")
-	log.Println(cloud.Cloud)
-	log.Println("------cloud")
-
-	log.Println("------RegionName")
-	log.Println(cloud.RegionName)
-	log.Println("------RegionName")
-
-	log.Println("------AuthURL")
-	log.Println(cloud.AuthInfo.AuthURL)
-	log.Println("------AuthURL")
 
 	if v, ok := clouds[cloudName]; ok {
 		cloud = &v

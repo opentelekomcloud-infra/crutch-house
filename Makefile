@@ -24,5 +24,4 @@ vet:
 
 acceptance:
 	@echo "Starting acceptance tests..."
-	@echo "OS_CLOUD=${OS_CLOUD}..."
 	@go test ./... -race -covermode=atomic -coverprofile=coverage.txt -timeout 20m -v
