@@ -2,6 +2,7 @@ package clientconfig
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
 
@@ -24,7 +25,7 @@ const (
 )
 
 func TestGetCloudFromYAML_emptyAll(t *testing.T) {
-	_, _, _ = getCloudPathsSetEnvVars()
+	_, _, _ = prepareCloudPaths()
 
 	cl, err := GetCloudFromYAML(&ClientOpts{})
 	require.NoError(t, err)
@@ -32,108 +33,97 @@ func TestGetCloudFromYAML_emptyAll(t *testing.T) {
 }
 
 func TestGetCloudFromPublic(t *testing.T) {
-	cloudsPath, publicPath, _ := getCloudPathsSetEnvVars()
-
-	cloudsTemplate := cloudsYamlTemplate
-	cloudsPublicTemplate := cloudsPublicYamlTemplate
+	cloudsPath, publicPath, _ := prepareCloudPaths()
 
 	f, err := os.Create(cloudsPath)
 	require.NoError(t, err)
 
 	defer f.Close()
 
-	_, err = f.Write([]byte(cloudsTemplate))
+	_, err = f.Write([]byte(cloudsYamlTemplate))
 	require.NoError(t, err)
 
 	f, err = os.Create(publicPath)
 	require.NoError(t, err)
-	_, err = f.Write([]byte(cloudsPublicTemplate))
+	_, err = f.Write([]byte(cloudsPublicYamlTemplate))
 	require.NoError(t, err)
 
 	cl, err := GetCloudFromYAML(&ClientOpts{})
 	require.NoError(t, err)
-	require.Contains(t, cl.AuthInfo.AuthURL, osAuthUrl2)
-	require.Contains(t, cl.AuthInfo.Password, osPassword)
+	assert.Equal(t, cl.AuthInfo.AuthURL, osAuthUrl2)
+	assert.Equal(t, cl.AuthInfo.Password, osPassword)
 }
 
 func TestGetCloudFromSecure(t *testing.T) {
-	cloudsPath, _, securePath := getCloudPathsSetEnvVars()
-
-	cloudsTemplate := cloudsYamlTemplate
-	cloudsSecureTemplate := cloudsSecureYamlTemplate
+	cloudsPath, _, securePath := prepareCloudPaths()
 
 	f, err := os.Create(cloudsPath)
 	require.NoError(t, err)
 
 	defer f.Close()
 
-	_, err = f.Write([]byte(cloudsTemplate))
+	_, err = f.Write([]byte(cloudsYamlTemplate))
 	require.NoError(t, err)
 
 	f, err = os.Create(securePath)
 	require.NoError(t, err)
-	_, err = f.Write([]byte(cloudsSecureTemplate))
+	_, err = f.Write([]byte(cloudsSecureYamlTemplate))
 	require.NoError(t, err)
 
 	cl, err := GetCloudFromYAML(&ClientOpts{})
 	require.NoError(t, err)
-	require.Contains(t, cl.AuthInfo.AuthURL, osAuthUrl)
-	require.Contains(t, cl.AuthInfo.Password, osPassword2)
+	assert.Equal(t, cl.AuthInfo.AuthURL, osAuthUrl)
+	assert.Equal(t, cl.AuthInfo.Password, osPassword2)
 }
 
 func TestGetCloudFromAllClouds(t *testing.T) {
-	cloudsPath, publicPath, securePath := getCloudPathsSetEnvVars()
-
-	cloudsTemplate := cloudsYamlTemplate
-	cloudsPublicTemplate := cloudsPublicYamlTemplate
-	cloudsSecureTemplate := cloudsSecureYamlTemplate
+	cloudsPath, publicPath, securePath := prepareCloudPaths()
 
 	f, err := os.Create(cloudsPath)
 	require.NoError(t, err)
 
 	defer f.Close()
 
-	_, err = f.Write([]byte(cloudsTemplate))
+	_, err = f.Write([]byte(cloudsYamlTemplate))
 	require.NoError(t, err)
 
 	f, err = os.Create(publicPath)
 	require.NoError(t, err)
-	_, err = f.Write([]byte(cloudsPublicTemplate))
+	_, err = f.Write([]byte(cloudsPublicYamlTemplate))
 	require.NoError(t, err)
 
 	f, err = os.Create(securePath)
 	require.NoError(t, err)
-	_, err = f.Write([]byte(cloudsSecureTemplate))
+	_, err = f.Write([]byte(cloudsSecureYamlTemplate))
 	require.NoError(t, err)
 
 	cl, err := GetCloudFromYAML(&ClientOpts{})
 	require.NoError(t, err)
-	require.Contains(t, cl.AuthInfo.AuthURL, osAuthUrl2)
-	require.Contains(t, cl.AuthInfo.Password, osPassword2)
+	assert.Equal(t, cl.AuthInfo.AuthURL, osAuthUrl2)
+	assert.Equal(t, cl.AuthInfo.Password, osPassword2)
 }
 
 func TestGetPureCloud(t *testing.T) {
-	cloudsPath, _, _ := getCloudPathsSetEnvVars()
-	cloudsTemplate := cloudsYamlTemplate
+	cloudsPath, _, _ := prepareCloudPaths()
 
 	f, err := os.Create(cloudsPath)
 	require.NoError(t, err)
 
 	defer f.Close()
 
-	_, err = f.Write([]byte(cloudsTemplate))
+	_, err = f.Write([]byte(cloudsYamlTemplate))
 	require.NoError(t, err)
 
 	cl, err := GetCloudFromYAML(&ClientOpts{})
 	require.NoError(t, err)
-	require.Contains(t, cl.AuthInfo.AuthURL, osAuthUrl)
-	require.Contains(t, cl.AuthInfo.Password, osPassword)
-	require.Contains(t, cl.AuthInfo.Username, osUsername)
-	require.Contains(t, cl.AuthInfo.ProjectName, osProjectName)
-	require.Contains(t, cl.AuthInfo.UserDomainName, osDomainName)
+	assert.Equal(t, cl.AuthInfo.AuthURL, osAuthUrl)
+	assert.Equal(t, cl.AuthInfo.Password, osPassword)
+	assert.Equal(t, cl.AuthInfo.Username, osUsername)
+	assert.Equal(t, cl.AuthInfo.ProjectName, osProjectName)
+	assert.Equal(t, cl.AuthInfo.UserDomainName, osDomainName)
 }
 
-func getCloudPathsSetEnvVars() (string, string, string) {
+func prepareCloudPaths() (string, string, string) {
 	cloudsYamlPath := fmt.Sprintf(cloudsPath, utils.RandomString(10, "clouds"))
 	cloudsPublicYamlPath := fmt.Sprintf(cloudsPath, utils.RandomString(15, "clouds-public"))
 	cloudsSecureYamlPath := fmt.Sprintf(cloudsPath, utils.RandomString(10, "secure"))
@@ -146,7 +136,8 @@ func getCloudPathsSetEnvVars() (string, string, string) {
 	return cloudsYamlPath, cloudsPublicYamlPath, cloudsSecureYamlPath
 }
 
-var cloudsYamlTemplate = fmt.Sprintf(`
+var (
+	cloudsYamlTemplate = fmt.Sprintf(`
 clouds:
   test:
     profile: "otc"
@@ -158,16 +149,17 @@ clouds:
       password: "%s"
 `, osAuthUrl, osProjectName, osUsername, osDomainName, osPassword)
 
-var cloudsPublicYamlTemplate = fmt.Sprintf(`
+	cloudsPublicYamlTemplate = fmt.Sprintf(`
 public-clouds:
   otc:
     auth:
       auth_url: "%s"
 `, osAuthUrl2)
 
-var cloudsSecureYamlTemplate = fmt.Sprintf(`
+	cloudsSecureYamlTemplate = fmt.Sprintf(`
 clouds:
   test:
     auth:
       password: "%s"
 `, osPassword2)
+)
