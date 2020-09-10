@@ -24,8 +24,7 @@ const (
 )
 
 func TestGetCloudFromYAML_emptyAll(t *testing.T) {
-
-	_, _, _ = createCloudsPathsSetEnvs()
+	_, _, _ = getCloudPathsSetEnvVars()
 
 	cl, err := GetCloudFromYAML(&ClientOpts{})
 	require.NoError(t, err)
@@ -33,7 +32,7 @@ func TestGetCloudFromYAML_emptyAll(t *testing.T) {
 }
 
 func TestGetCloudFromPublic(t *testing.T) {
-	cloudsPath, publicPath, _ := createCloudsPathsSetEnvs()
+	cloudsPath, publicPath, _ := getCloudPathsSetEnvVars()
 
 	cloudsTemplate := cloudsYamlTemplate
 	cloudsPublicTemplate := cloudsPublicYamlTemplate
@@ -53,13 +52,37 @@ func TestGetCloudFromPublic(t *testing.T) {
 
 	cl, err := GetCloudFromYAML(&ClientOpts{})
 	require.NoError(t, err)
-	require.Contains(t, cl.AuthInfo.AuthURL, "http://url-from-clouds-public.yaml")
-	require.Contains(t, cl.AuthInfo.Password, "Qwerty123!")
+	require.Contains(t, cl.AuthInfo.AuthURL, osAuthUrl2)
+	require.Contains(t, cl.AuthInfo.Password, osPassword)
+}
+
+func TestGetCloudFromSecure(t *testing.T) {
+	cloudsPath, _, securePath := getCloudPathsSetEnvVars()
+
+	cloudsTemplate := cloudsYamlTemplate
+	cloudsSecureTemplate := cloudsSecureYamlTemplate
+
+	f, err := os.Create(cloudsPath)
+	require.NoError(t, err)
+
+	defer f.Close()
+
+	_, err = f.Write([]byte(cloudsTemplate))
+	require.NoError(t, err)
+
+	f, err = os.Create(securePath)
+	require.NoError(t, err)
+	_, err = f.Write([]byte(cloudsSecureTemplate))
+	require.NoError(t, err)
+
+	cl, err := GetCloudFromYAML(&ClientOpts{})
+	require.NoError(t, err)
+	require.Contains(t, cl.AuthInfo.AuthURL, osAuthUrl)
+	require.Contains(t, cl.AuthInfo.Password, osPassword2)
 }
 
 func TestGetCloudFromAllClouds(t *testing.T) {
-
-	cloudsPath, publicPath, securePath := createCloudsPathsSetEnvs()
+	cloudsPath, publicPath, securePath := getCloudPathsSetEnvVars()
 
 	cloudsTemplate := cloudsYamlTemplate
 	cloudsPublicTemplate := cloudsPublicYamlTemplate
@@ -85,11 +108,32 @@ func TestGetCloudFromAllClouds(t *testing.T) {
 
 	cl, err := GetCloudFromYAML(&ClientOpts{})
 	require.NoError(t, err)
-	require.Contains(t, cl.AuthInfo.AuthURL, "http://url-from-clouds-public.yaml")
-	require.Contains(t, cl.AuthInfo.Password, "SecuredPa$$w0rd1")
+	require.Contains(t, cl.AuthInfo.AuthURL, osAuthUrl2)
+	require.Contains(t, cl.AuthInfo.Password, osPassword2)
 }
 
-func createCloudsPathsSetEnvs() (string, string, string) {
+func TestGetPureCloud(t *testing.T) {
+	cloudsPath, _, _ := getCloudPathsSetEnvVars()
+	cloudsTemplate := cloudsYamlTemplate
+
+	f, err := os.Create(cloudsPath)
+	require.NoError(t, err)
+
+	defer f.Close()
+
+	_, err = f.Write([]byte(cloudsTemplate))
+	require.NoError(t, err)
+
+	cl, err := GetCloudFromYAML(&ClientOpts{})
+	require.NoError(t, err)
+	require.Contains(t, cl.AuthInfo.AuthURL, osAuthUrl)
+	require.Contains(t, cl.AuthInfo.Password, osPassword)
+	require.Contains(t, cl.AuthInfo.Username, osUsername)
+	require.Contains(t, cl.AuthInfo.ProjectName, osProjectName)
+	require.Contains(t, cl.AuthInfo.UserDomainName, osDomainName)
+}
+
+func getCloudPathsSetEnvVars() (string, string, string) {
 	cloudsYamlPath := fmt.Sprintf(cloudsPath, utils.RandomString(10, "clouds"))
 	cloudsPublicYamlPath := fmt.Sprintf(cloudsPath, utils.RandomString(15, "clouds-public"))
 	cloudsSecureYamlPath := fmt.Sprintf(cloudsPath, utils.RandomString(10, "secure"))
