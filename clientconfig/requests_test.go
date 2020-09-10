@@ -38,17 +38,12 @@ func TestGetCloudFromYAML_emptyAll(t *testing.T) {
 }
 
 func TestGetCloudFromPublic(t *testing.T) {
-	cloudsYamlPath := fmt.Sprintf(cloudsPath, utils.RandomString(10, "clouds"))
-	cloudsPublicYamlPath := fmt.Sprintf(cloudsPath, utils.RandomString(15, "clouds-public"))
-
-	_ = os.Setenv("OS_CLIENT_CONFIG_FILE", cloudsYamlPath)
-	_ = os.Setenv("OS_CLIENT_VENDOR_FILE", cloudsPublicYamlPath)
-	_ = os.Setenv("OS_CLOUD", "test")
+	cloudsPath, publicPath, _ := createCloudsPathsSetEnvs()
 
 	cloudsTemplate := cloudsYamlTemplate
 	cloudsPublicTemplate := cloudsPublicYamlTemplate
 
-	f, err := os.Create(cloudsYamlPath)
+	f, err := os.Create(cloudsPath)
 	require.NoError(t, err)
 
 	defer f.Close()
@@ -56,7 +51,7 @@ func TestGetCloudFromPublic(t *testing.T) {
 	_, err = f.Write([]byte(cloudsTemplate))
 	require.NoError(t, err)
 
-	f, err = os.Create(cloudsPublicYamlPath)
+	f, err = os.Create(publicPath)
 	require.NoError(t, err)
 	_, err = f.Write([]byte(cloudsPublicTemplate))
 	require.NoError(t, err)
@@ -68,20 +63,14 @@ func TestGetCloudFromPublic(t *testing.T) {
 }
 
 func TestGetCloudFromAllClouds(t *testing.T) {
-	cloudsYamlPath := fmt.Sprintf(cloudsPath, utils.RandomString(10, "clouds"))
-	cloudsPublicYamlPath := fmt.Sprintf(cloudsPath, utils.RandomString(15, "clouds-public"))
-	cloudsSecureYamlPath := fmt.Sprintf(cloudsPath, utils.RandomString(10, "secure"))
 
-	_ = os.Setenv("OS_CLIENT_CONFIG_FILE", cloudsYamlPath)
-	_ = os.Setenv("OS_CLIENT_VENDOR_FILE", cloudsPublicYamlPath)
-	_ = os.Setenv("OS_CLIENT_Secure_FILE", cloudsSecureYamlPath)
-	_ = os.Setenv("OS_CLOUD", "test")
+	cloudsPath, publicPath, securePath := createCloudsPathsSetEnvs()
 
 	cloudsTemplate := cloudsYamlTemplate
 	cloudsPublicTemplate := cloudsPublicYamlTemplate
 	cloudsSecureTemplate := cloudsSecureYamlTemplate
 
-	f, err := os.Create(cloudsYamlPath)
+	f, err := os.Create(cloudsPath)
 	require.NoError(t, err)
 
 	defer f.Close()
@@ -89,12 +78,12 @@ func TestGetCloudFromAllClouds(t *testing.T) {
 	_, err = f.Write([]byte(cloudsTemplate))
 	require.NoError(t, err)
 
-	f, err = os.Create(cloudsPublicYamlPath)
+	f, err = os.Create(publicPath)
 	require.NoError(t, err)
 	_, err = f.Write([]byte(cloudsPublicTemplate))
 	require.NoError(t, err)
 
-	f, err = os.Create(cloudsSecureYamlPath)
+	f, err = os.Create(securePath)
 	require.NoError(t, err)
 	_, err = f.Write([]byte(cloudsSecureTemplate))
 	require.NoError(t, err)
@@ -103,6 +92,19 @@ func TestGetCloudFromAllClouds(t *testing.T) {
 	require.NoError(t, err)
 	require.Contains(t, cl.AuthInfo.AuthURL, "http://url-from-clouds-public.yaml")
 	require.Contains(t, cl.AuthInfo.Password, "SecuredPa$$w0rd1")
+}
+
+func createCloudsPathsSetEnvs() (string, string, string) {
+	cloudsYamlPath := fmt.Sprintf(cloudsPath, utils.RandomString(10, "clouds"))
+	cloudsPublicYamlPath := fmt.Sprintf(cloudsPath, utils.RandomString(15, "clouds-public"))
+	cloudsSecureYamlPath := fmt.Sprintf(cloudsPath, utils.RandomString(10, "secure"))
+
+	_ = os.Setenv("OS_CLIENT_CONFIG_FILE", cloudsYamlPath)
+	_ = os.Setenv("OS_CLIENT_VENDOR_FILE", cloudsPublicYamlPath)
+	_ = os.Setenv("OS_CLIENT_SECURE_FILE", cloudsSecureYamlPath)
+	_ = os.Setenv("OS_CLOUD", "test")
+
+	return cloudsYamlPath, cloudsPublicYamlPath, cloudsSecureYamlPath
 }
 
 var cloudsYamlTemplate = fmt.Sprintf(`
