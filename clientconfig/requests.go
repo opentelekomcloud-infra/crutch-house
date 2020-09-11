@@ -40,6 +40,9 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// AuthType represents a valid method of authentication.
+type AuthType string
+
 // ClientOpts represents options to customize the way a client is
 // configured.
 type ClientOpts struct {
@@ -48,6 +51,10 @@ type ClientOpts struct {
 
 	// EnvPrefix allows a custom environment variable prefix to be used.
 	EnvPrefix string
+
+	// AuthType specifies the type of authentication to use.
+	// By default, this is "password".
+	AuthType AuthType
 
 	// AuthInfo defines the authentication information needed to
 	// authenticate to a cloud when clouds.yaml isn't used.
@@ -225,46 +232,6 @@ func GetCloudFromYAML(opts *ClientOpts) (*Cloud, error) {
 	} else {
 		log.Printf(cloudNotFound, cloudName, "clouds.yaml")
 	}
-
-	log.Println("------cloud")
-	log.Println(cloud.Cloud)
-	log.Println("------cloud")
-
-	log.Println("------RegionName")
-	log.Println(cloud.RegionName)
-	log.Println("------RegionName")
-
-	log.Println("------AuthURL")
-	log.Println(cloud.AuthInfo.AuthURL)
-	log.Println("------AuthURL")
-
-	log.Println("------UserDomainName")
-	log.Println(cloud.AuthInfo.UserDomainName)
-	log.Println("------UserDomainName")
-
-	log.Println("------UserDomainID")
-	log.Println(cloud.AuthInfo.UserDomainID)
-	log.Println("------UserDomainID")
-
-	log.Println("------DomainName")
-	log.Println(cloud.AuthInfo.DomainName)
-	log.Println("------DomainName")
-
-	log.Println("------DomainID")
-	log.Println(cloud.AuthInfo.DomainID)
-	log.Println("------DomainID")
-
-	log.Println("------ProjectDomainName")
-	log.Println(cloud.AuthInfo.ProjectDomainName)
-	log.Println("------ProjectDomainName")
-
-	log.Println("------ProjectDomainID")
-	log.Println(cloud.AuthInfo.ProjectDomainID)
-	log.Println("------ProjectDomainID")
-
-	log.Println("------DefaultDomain")
-	log.Println(cloud.AuthInfo.DefaultDomain)
-	log.Println("------DefaultDomain")
 
 	// Next, load a secure clouds file and see if a cloud entry
 	// can be found or merged.
@@ -716,7 +683,6 @@ func v3AKSKAuth(client *huaweisdk.ProviderClient, endpoint string, options huawe
 // AuthenticatedClient is a convenience function to get a new provider client
 // based on a clouds.yaml entry.
 func AuthenticatedClient(opts *ClientOpts) (client *huaweisdk.ProviderClient, err error) {
-
 	ao, err := AuthOptions(opts)
 	if err != nil {
 		return nil, err

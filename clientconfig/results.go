@@ -41,6 +41,7 @@ type Cloud struct {
 	Cloud      string        `yaml:"cloud,omitempty" json:"cloud,omitempty"`
 	Profile    string        `yaml:"profile,omitempty" json:"profile,omitempty"`
 	AuthInfo   *AuthInfo     `yaml:"auth,omitempty" json:"auth,omitempty"`
+	AuthType   AuthType      `yaml:"auth_type,omitempty" json:"auth_type,omitempty"`
 	RegionName string        `yaml:"region_name,omitempty" json:"region_name,omitempty"`
 	Regions    []interface{} `yaml:"regions,omitempty" json:"regions,omitempty"`
 
