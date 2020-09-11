@@ -4,8 +4,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/huaweicloud/golangsdk/openstack/cce/v3/clusters"
-	"github.com/huaweicloud/golangsdk/openstack/cce/v3/nodes"
+	"github.com/opentelekomcloud/gophertelekomcloud/openstack/cce/v3/clusters"
+	"github.com/opentelekomcloud/gophertelekomcloud/openstack/cce/v3/nodes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 

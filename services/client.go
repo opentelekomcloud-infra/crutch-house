@@ -4,20 +4,20 @@ import (
 	"fmt"
 	"time"
 
-	huaweisdk "github.com/huaweicloud/golangsdk"
-	"github.com/huaweicloud/golangsdk/openstack/cce/v3/clusters"
-	"github.com/huaweicloud/golangsdk/openstack/cce/v3/nodes"
-	"github.com/huaweicloud/golangsdk/openstack/compute/v2/extensions/keypairs"
-	"github.com/huaweicloud/golangsdk/openstack/compute/v2/extensions/secgroups"
-	"github.com/huaweicloud/golangsdk/openstack/compute/v2/extensions/servergroups"
-	"github.com/huaweicloud/golangsdk/openstack/compute/v2/servers"
-	"github.com/huaweicloud/golangsdk/openstack/networking/v1/eips"
-	"github.com/huaweicloud/golangsdk/openstack/networking/v1/subnets"
-	"github.com/huaweicloud/golangsdk/openstack/networking/v1/vpcs"
-	"github.com/huaweicloud/golangsdk/openstack/networking/v2/extensions/lbaas_v2/listeners"
-	"github.com/huaweicloud/golangsdk/openstack/networking/v2/extensions/lbaas_v2/loadbalancers"
-	"github.com/huaweicloud/golangsdk/openstack/networking/v2/extensions/lbaas_v2/monitors"
-	"github.com/huaweicloud/golangsdk/openstack/networking/v2/extensions/lbaas_v2/pools"
+	"github.com/opentelekomcloud/gophertelekomcloud"
+	"github.com/opentelekomcloud/gophertelekomcloud/openstack/cce/v3/clusters"
+	"github.com/opentelekomcloud/gophertelekomcloud/openstack/cce/v3/nodes"
+	"github.com/opentelekomcloud/gophertelekomcloud/openstack/compute/v2/extensions/keypairs"
+	"github.com/opentelekomcloud/gophertelekomcloud/openstack/compute/v2/extensions/secgroups"
+	"github.com/opentelekomcloud/gophertelekomcloud/openstack/compute/v2/extensions/servergroups"
+	"github.com/opentelekomcloud/gophertelekomcloud/openstack/compute/v2/servers"
+	"github.com/opentelekomcloud/gophertelekomcloud/openstack/networking/v1/eips"
+	"github.com/opentelekomcloud/gophertelekomcloud/openstack/networking/v1/subnets"
+	"github.com/opentelekomcloud/gophertelekomcloud/openstack/networking/v1/vpcs"
+	"github.com/opentelekomcloud/gophertelekomcloud/openstack/networking/v2/extensions/lbaas_v2/listeners"
+	"github.com/opentelekomcloud/gophertelekomcloud/openstack/networking/v2/extensions/lbaas_v2/loadbalancers"
+	"github.com/opentelekomcloud/gophertelekomcloud/openstack/networking/v2/extensions/lbaas_v2/monitors"
+	"github.com/opentelekomcloud/gophertelekomcloud/openstack/networking/v2/extensions/lbaas_v2/pools"
 
 	"github.com/opentelekomcloud-infra/crutch-house/clientconfig"
 )
@@ -100,12 +100,12 @@ type Client interface {
 
 // client contains service clients
 type client struct {
-	Provider *huaweisdk.ProviderClient
+	Provider *golangsdk.ProviderClient
 
-	ComputeV2 *huaweisdk.ServiceClient
-	NetworkV2 *huaweisdk.ServiceClient
-	VPC       *huaweisdk.ServiceClient
-	CCE       *huaweisdk.ServiceClient
+	ComputeV2 *golangsdk.ServiceClient
+	NetworkV2 *golangsdk.ServiceClient
+	VPC       *golangsdk.ServiceClient
+	CCE       *golangsdk.ServiceClient
 
 	opts *clientconfig.ClientOpts
 }

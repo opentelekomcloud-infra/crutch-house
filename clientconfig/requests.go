@@ -29,14 +29,14 @@ import (
 	"os"
 	"strings"
 
-	huaweisdk "github.com/huaweicloud/golangsdk"
-	huaweicloud "github.com/huaweicloud/golangsdk/openstack"
-	"github.com/huaweicloud/golangsdk/openstack/identity/v3/domains"
-	"github.com/huaweicloud/golangsdk/openstack/identity/v3/endpoints"
-	"github.com/huaweicloud/golangsdk/openstack/identity/v3/projects"
-	"github.com/huaweicloud/golangsdk/openstack/identity/v3/services"
-	"github.com/huaweicloud/golangsdk/openstack/identity/v3/tokens"
-	"github.com/huaweicloud/golangsdk/pagination"
+	"github.com/opentelekomcloud/gophertelekomcloud"
+	"github.com/opentelekomcloud/gophertelekomcloud/openstack"
+	"github.com/opentelekomcloud/gophertelekomcloud/openstack/identity/v3/domains"
+	"github.com/opentelekomcloud/gophertelekomcloud/openstack/identity/v3/endpoints"
+	"github.com/opentelekomcloud/gophertelekomcloud/openstack/identity/v3/projects"
+	"github.com/opentelekomcloud/gophertelekomcloud/openstack/identity/v3/services"
+	"github.com/opentelekomcloud/gophertelekomcloud/openstack/identity/v3/tokens"
+	"github.com/opentelekomcloud/gophertelekomcloud/pagination"
 	"gopkg.in/yaml.v2"
 )
 
@@ -293,7 +293,7 @@ func GetCloudFromYAML(opts *ClientOpts) (*Cloud, error) {
 //
 // See http://docs.openstack.org/developer/os-client-config and
 // https://github.com/openstack/os-client-config/blob/master/os_client_config/config.py.
-func AuthOptions(opts *ClientOpts) (huaweisdk.AuthOptionsProvider, error) {
+func AuthOptions(opts *ClientOpts) (golangsdk.AuthOptionsProvider, error) {
 	cloud := new(Cloud)
 
 	// If no opts were passed in, create an empty ClientOpts.
@@ -343,7 +343,7 @@ func AuthOptions(opts *ClientOpts) (huaweisdk.AuthOptionsProvider, error) {
 }
 
 // v3auth creates a v3-compatible gophercloud.AuthOptions struct.
-func v3auth(cloud *Cloud, opts *ClientOpts) (huaweisdk.AuthOptionsProvider, error) {
+func v3auth(cloud *Cloud, opts *ClientOpts) (golangsdk.AuthOptionsProvider, error) {
 	// Environment variable overrides.
 	envPrefix := "OS_"
 	if opts != nil && opts.EnvPrefix != "" {
@@ -477,12 +477,12 @@ func v3auth(cloud *Cloud, opts *ClientOpts) (huaweisdk.AuthOptionsProvider, erro
 
 	// Check for absolute minimum requirements.
 	if cloud.AuthInfo.AuthURL == "" {
-		err := huaweisdk.ErrMissingInput{Argument: "auth_url"}
+		err := golangsdk.ErrMissingInput{Argument: "auth_url"}
 		return nil, err
 	}
 
 	if cloud.AuthInfo.AccessKey != "" {
-		return huaweisdk.AKSKAuthOptions{
+		return golangsdk.AKSKAuthOptions{
 			IdentityEndpoint: cloud.AuthInfo.AuthURL,
 			Region:           cloud.RegionName,
 			DomainID:         cloud.AuthInfo.UserDomainID,
@@ -493,7 +493,7 @@ func v3auth(cloud *Cloud, opts *ClientOpts) (huaweisdk.AuthOptionsProvider, erro
 		}, nil
 	}
 
-	return huaweisdk.AuthOptions{
+	return golangsdk.AuthOptions{
 		IdentityEndpoint: cloud.AuthInfo.AuthURL,
 		TokenID:          cloud.AuthInfo.Token,
 		Username:         cloud.AuthInfo.Username,
@@ -507,7 +507,7 @@ func v3auth(cloud *Cloud, opts *ClientOpts) (huaweisdk.AuthOptionsProvider, erro
 
 }
 
-func getDomainID(name string, client *huaweisdk.ServiceClient) (string, error) {
+func getDomainID(name string, client *golangsdk.ServiceClient) (string, error) {
 	old := client.Endpoint
 	defer func() { client.Endpoint = old }()
 
@@ -529,14 +529,14 @@ func getDomainID(name string, client *huaweisdk.ServiceClient) (string, error) {
 	count := len(all)
 	switch count {
 	case 0:
-		err := &huaweisdk.ErrResourceNotFound{}
+		err := &golangsdk.ErrResourceNotFound{}
 		err.ResourceType = "iam"
 		err.Name = name
 		return "", err
 	case 1:
 		return all[0].ID, nil
 	default:
-		err := &huaweisdk.ErrMultipleResourcesFound{}
+		err := &golangsdk.ErrMultipleResourcesFound{}
 		err.ResourceType = "iam"
 		err.Name = name
 		err.Count = count
@@ -544,7 +544,7 @@ func getDomainID(name string, client *huaweisdk.ServiceClient) (string, error) {
 	}
 }
 
-func getProjectID(client *huaweisdk.ServiceClient, name string) (string, error) {
+func getProjectID(client *golangsdk.ServiceClient, name string) (string, error) {
 	opts := projects.ListOpts{
 		Name: name,
 	}
@@ -580,8 +580,8 @@ func getEntryByServiceId(entries []tokens.CatalogEntry, serviceId string) *token
 	return nil
 }
 
-func v3AKSKAuth(client *huaweisdk.ProviderClient, endpoint string, options huaweisdk.AKSKAuthOptions, eo huaweisdk.EndpointOpts) error {
-	v3Client, err := huaweicloud.NewIdentityV3(client, eo)
+func v3AKSKAuth(client *golangsdk.ProviderClient, endpoint string, options golangsdk.AKSKAuthOptions, eo golangsdk.EndpointOpts) error {
+	v3Client, err := openstack.NewIdentityV3(client, eo)
 	if err != nil {
 		return err
 	}
@@ -665,8 +665,8 @@ func v3AKSKAuth(client *huaweisdk.ProviderClient, endpoint string, options huawe
 		return err
 	}
 
-	client.EndpointLocator = func(opts huaweisdk.EndpointOpts) (string, error) {
-		return huaweicloud.V3EndpointURL(&tokens.ServiceCatalog{
+	client.EndpointLocator = func(opts golangsdk.EndpointOpts) (string, error) {
+		return openstack.V3EndpointURL(&tokens.ServiceCatalog{
 			Entries: entries,
 		}, opts)
 	}
@@ -675,7 +675,7 @@ func v3AKSKAuth(client *huaweisdk.ProviderClient, endpoint string, options huawe
 
 // AuthenticatedClient is a convenience function to get a new provider client
 // based on a clouds.yaml entry.
-func AuthenticatedClient(opts *ClientOpts) (client *huaweisdk.ProviderClient, err error) {
+func AuthenticatedClient(opts *ClientOpts) (client *golangsdk.ProviderClient, err error) {
 
 	ao, err := AuthOptions(opts)
 	if err != nil {
@@ -684,23 +684,23 @@ func AuthenticatedClient(opts *ClientOpts) (client *huaweisdk.ProviderClient, er
 
 	var authUrl string
 
-	tokenOpts, tokenAuth := ao.(huaweisdk.AuthOptions)
-	akskOpts, akskAuth := ao.(huaweisdk.AKSKAuthOptions)
+	tokenOpts, tokenAuth := ao.(golangsdk.AuthOptions)
+	akskOpts, akskAuth := ao.(golangsdk.AKSKAuthOptions)
 
 	if tokenAuth {
 		authUrl = tokenOpts.IdentityEndpoint
 	} else if akskAuth {
 		authUrl = akskOpts.IdentityEndpoint
 	}
-	client, err = huaweicloud.NewClient(authUrl)
+	client, err = openstack.NewClient(authUrl)
 	if err != nil {
 		return nil, err
 	}
 
 	if akskAuth {
-		err = v3AKSKAuth(client, "", akskOpts, huaweisdk.EndpointOpts{})
+		err = v3AKSKAuth(client, "", akskOpts, golangsdk.EndpointOpts{})
 	} else if tokenAuth {
-		err = huaweicloud.AuthenticateV3(client, &tokenOpts, huaweisdk.EndpointOpts{})
+		err = openstack.AuthenticateV3(client, &tokenOpts, golangsdk.EndpointOpts{})
 	}
 
 	if err != nil {
@@ -710,7 +710,7 @@ func AuthenticatedClient(opts *ClientOpts) (client *huaweisdk.ProviderClient, er
 }
 
 // NewServiceClient is a convenience function to get a new service client.
-func NewServiceClient(service string, opts *ClientOpts) (*huaweisdk.ServiceClient, error) {
+func NewServiceClient(service string, opts *ClientOpts) (*golangsdk.ServiceClient, error) {
 	cloud := new(Cloud)
 
 	// If no opts were passed in, create an empty ClientOpts.
@@ -793,36 +793,36 @@ func NewServiceClient(service string, opts *ClientOpts) (*huaweisdk.ServiceClien
 		endpointType = v
 	}
 
-	eo := huaweisdk.EndpointOpts{
+	eo := golangsdk.EndpointOpts{
 		Region:       region,
-		Availability: huaweisdk.Availability(GetEndpointType(endpointType)),
+		Availability: golangsdk.Availability(GetEndpointType(endpointType)),
 	}
 
 	switch service {
 	case "compute":
-		return huaweicloud.NewComputeV2(pClient, eo)
+		return openstack.NewComputeV2(pClient, eo)
 	case "database":
-		return huaweicloud.NewDBV1(pClient, eo)
+		return openstack.NewDBV1(pClient, eo)
 	case "dns":
-		return huaweicloud.NewDNSV2(pClient, eo)
+		return openstack.NewDNSV2(pClient, eo)
 	case "identity":
-		return huaweicloud.NewIdentityV3(pClient, eo)
+		return openstack.NewIdentityV3(pClient, eo)
 	case "image":
-		return huaweicloud.NewImageServiceV2(pClient, eo)
+		return openstack.NewImageServiceV2(pClient, eo)
 	case "load-balancer":
-		return huaweicloud.NewLoadBalancerV2(pClient, eo)
+		return openstack.NewLoadBalancerV2(pClient, eo)
 	case "vpc":
-		return huaweicloud.NewNetworkV1(pClient, eo)
+		return openstack.NewNetworkV1(pClient, eo)
 	case "network":
-		return huaweicloud.NewNetworkV2(pClient, eo)
+		return openstack.NewNetworkV2(pClient, eo)
 	case "object-store":
-		return huaweicloud.NewObjectStorageV1(pClient, eo)
+		return openstack.NewObjectStorageV1(pClient, eo)
 	case "cce":
-		return huaweicloud.NewCCE(pClient, eo)
+		return openstack.NewCCE(pClient, eo)
 	case "orchestration":
-		return huaweicloud.NewOrchestrationV1(pClient, eo)
+		return openstack.NewOrchestrationV1(pClient, eo)
 	case "sharev2":
-		return huaweicloud.NewSharedFileSystemV2(pClient, eo)
+		return openstack.NewSharedFileSystemV2(pClient, eo)
 	case "volume":
 		volumeVersion := "2"
 		if v := cloud.VolumeAPIVersion; v != "" {
@@ -831,11 +831,11 @@ func NewServiceClient(service string, opts *ClientOpts) (*huaweisdk.ServiceClien
 
 		switch volumeVersion {
 		case "v1", "1":
-			return huaweicloud.NewBlockStorageV1(pClient, eo)
+			return openstack.NewBlockStorageV1(pClient, eo)
 		case "v2", "2":
-			return huaweicloud.NewBlockStorageV2(pClient, eo)
+			return openstack.NewBlockStorageV2(pClient, eo)
 		case "v3", "3":
-			return huaweicloud.NewBlockStorageV3(pClient, eo)
+			return openstack.NewBlockStorageV3(pClient, eo)
 		default:
 			return nil, fmt.Errorf("invalid volume API version")
 		}

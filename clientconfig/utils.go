@@ -32,10 +32,10 @@ import (
 	"reflect"
 	"strings"
 
-	huaweisdk "github.com/huaweicloud/golangsdk"
+	"github.com/opentelekomcloud/gophertelekomcloud"
 )
 
-const DefaultEndpointType = string(huaweisdk.AvailabilityPublic)
+const DefaultEndpointType = string(golangsdk.AvailabilityPublic)
 
 // defaultIfEmpty is a helper function to make it cleaner to set default value
 // for strings.
