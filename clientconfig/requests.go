@@ -679,24 +679,14 @@ func AuthenticatedClient(opts *ClientOpts) (client *golangsdk.ProviderClient, er
 		return nil, err
 	}
 
-	var authUrl string
-	var tokenAuth, akskAuth bool
-
-	if ao.TokenID != "" {
-		authUrl = ao.IdentityEndpoint
-		tokenAuth = true
-	} else if ao.AKSKAuthOptions.Access != "" {
-		authUrl = ao.IdentityEndpoint
-		akskAuth = true
-	}
-	client, err = golangcloud.NewClient(authUrl)
+	client, err = golangcloud.NewClient(ao.IdentityEndpoint)
 	if err != nil {
 		return nil, err
 	}
 
-	if akskAuth {
+	if ao.AKSKAuthOptions != nil {
 		err = v3AKSKAuth(client, "", *ao, golangsdk.EndpointOpts{})
-	} else if tokenAuth {
+	} else {
 		err = golangcloud.AuthenticateV3(client, ao, golangsdk.EndpointOpts{})
 	}
 
