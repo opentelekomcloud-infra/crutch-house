@@ -25,17 +25,16 @@ package clientconfig
 import (
 	"encoding/json"
 	"fmt"
+	golangsdk "github.com/opentelekomcloud/gophertelekomcloud"
 	"io/ioutil"
 	"os"
 	"os/user"
 	"path/filepath"
 	"reflect"
 	"strings"
-
-	huaweisdk "github.com/huaweicloud/golangsdk"
 )
 
-const DefaultEndpointType = string(huaweisdk.AvailabilityPublic)
+const DefaultEndpointType = string(golangsdk.AvailabilityPublic)
 
 // defaultIfEmpty is a helper function to make it cleaner to set default value
 // for strings.
