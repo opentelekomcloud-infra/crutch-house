@@ -26,7 +26,7 @@ func (c *client) InitECS() error {
 }
 
 // CreateECSInstance - create new ECS instance
-func (c *client) CreateECSInstance(opts cloudservers.CreateOptsBuilder) (string, error) {
+func (c *client) CreateECSInstance(opts cloudservers.CreateOptsBuilder, timeoutSeconds int) (string, error) {
 	if err := c.InitECS(); err != nil {
 		return "", err
 	}
@@ -34,7 +34,7 @@ func (c *client) CreateECSInstance(opts cloudservers.CreateOptsBuilder) (string,
 	if err != nil {
 		return "", fmt.Errorf("failed to create ECS: %s", err)
 	}
-	if err := cloudservers.WaitForJobSuccess(c.ECS, defaultTimeout, job.JobID); err != nil {
+	if err := cloudservers.WaitForJobSuccess(c.ECS, timeoutSeconds, job.JobID); err != nil {
 		return "", fmt.Errorf("failed to wait for ECS creation success: %s", err)
 	}
 	entity, err := cloudservers.GetJobEntity(c.ECS, job.JobID, "server_id")

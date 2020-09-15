@@ -66,7 +66,7 @@ func TestClient_CreateNewECS(t *testing.T) {
 			{Key: "by", Value: "dmd"},
 		},
 	}
-	id, err := cl.CreateECSInstance(opts)
+	id, err := cl.CreateECSInstance(opts, defaultTimeout)
 	require.NoError(t, err)
 	require.NotEmpty(t, id)
 
