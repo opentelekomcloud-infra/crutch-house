@@ -5,6 +5,6 @@ before_install:
 - mkdir -p ~/.config/openstack
 - openssl aes-256-cbc -K $encrypted_8da6df925ffa_key -iv $encrypted_8da6df925ffa_iv -in clouds.yaml.enc -out ~/.config/openstack/clouds.yaml -d
 script:
-- travis_wait make test
+- travis_wait 30 make test
 after_success:
 - bash <(curl -s https://codecov.io/bash)
