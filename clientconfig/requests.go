@@ -799,6 +799,8 @@ func NewServiceClient(service string, opts *ClientOpts) (*golangsdk.ServiceClien
 	}
 
 	switch service {
+	case "ecs":
+		return openstack.NewEcsV1(pClient, eo)
 	case "compute":
 		return openstack.NewComputeV2(pClient, eo)
 	case "database":
