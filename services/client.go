@@ -11,6 +11,7 @@ import (
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/compute/v2/extensions/secgroups"
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/compute/v2/extensions/servergroups"
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/compute/v2/servers"
+	"github.com/opentelekomcloud/gophertelekomcloud/openstack/ecs/v1/cloudservers"
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/networking/v1/eips"
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/networking/v1/subnets"
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/networking/v1/vpcs"
@@ -96,12 +97,17 @@ type Client interface {
 	DeleteLBMember(poolID, memberID string) error
 	CreateLBMonitor(opts *monitors.CreateOpts) (*monitors.Monitor, error)
 	DeleteLBMonitor(id string) error
+	InitECS() error
+	CreateECSInstance(opts cloudservers.CreateOptsBuilder) (string, error)
+	GetECSStatus(instanceID string) (*cloudservers.CloudServer, error)
+	DeleteECSInstance(instanceID string) error
 }
 
 // client contains service clients
 type client struct {
 	Provider *golangsdk.ProviderClient
 
+	ECS       *golangsdk.ServiceClient
 	ComputeV2 *golangsdk.ServiceClient
 	NetworkV2 *golangsdk.ServiceClient
 	VPC       *golangsdk.ServiceClient
