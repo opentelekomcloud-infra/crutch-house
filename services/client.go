@@ -98,7 +98,7 @@ type Client interface {
 	CreateLBMonitor(opts *monitors.CreateOpts) (*monitors.Monitor, error)
 	DeleteLBMonitor(id string) error
 	InitECS() error
-	CreateECSInstance(opts cloudservers.CreateOptsBuilder) (string, error)
+	CreateECSInstance(opts cloudservers.CreateOptsBuilder, timeoutSeconds int) (string, error)
 	GetECSStatus(instanceID string) (*cloudservers.CloudServer, error)
 	DeleteECSInstance(instanceID string) error
 }
