@@ -83,7 +83,10 @@ type YAMLOptsBuilder interface {
 	LoadPublicCloudsYAML() (map[string]Cloud, error)
 }
 
-const cloudNotFound = "could not find cloud %s in %s"
+const (
+	cloudNotFound = "could not find cloud %s in %s"
+	defaultRegion = "eu-de"
+)
 
 // YAMLOpts represents options and methods to load a clouds.yaml file.
 type YAMLOpts struct {
@@ -721,9 +724,12 @@ func NewServiceClient(service string, env openstack.Env) (*golangsdk.ServiceClie
 		return nil, err
 	}
 	cloud, _ := env.Cloud() // Auth happened before, no err is expected
-
+	region := cloud.RegionName
+	if region == "" {
+		region = defaultRegion
+	}
 	eo := golangsdk.EndpointOpts{
-		Region:       cloud.RegionName,
+		Region:       region,
 		Availability: golangsdk.Availability(GetEndpointType(cloud.EndpointType)),
 	}
 
