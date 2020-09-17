@@ -74,8 +74,14 @@ func (s *ClientTestSuite) TestClient_AuthenticateAKSK() {
 }
 
 func (s *ClientTestSuite) TestClient_AuthenticateToken() {
+	// Use token from standard auth
+	preClient := authClient(s.T())
+	tok, err := preClient.Token()
+	s.Require().NoError(err)
+	s.Require().NoError(os.Setenv(prefToken+"TOKEN", tok))
+
 	client := NewClient(prefToken)
-	err := client.Authenticate()
+	err = client.Authenticate()
 	require.NoError(s.T(), err, authFailedMessage, err)
 }
 
@@ -96,7 +102,7 @@ func (s *ClientTestSuite) SetupSuite() {
 	s.vars = append(s.vars, vars...)
 
 	// token
-	vars = copyEnvVars(prefToken, "TOKEN")
+	vars = copyEnvVars(prefToken)
 	s.vars = append(s.vars, vars...)
 }
 
