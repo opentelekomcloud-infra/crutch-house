@@ -32,7 +32,7 @@ func (c *client) InitCompute() error {
 	if c.ComputeV2 != nil {
 		return nil
 	}
-	cmp, err := clientconfig.NewServiceClient("compute", c.opts)
+	cmp, err := clientconfig.NewServiceClient("compute", c.env)
 	if err != nil {
 		return err
 	}
