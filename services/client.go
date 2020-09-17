@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/opentelekomcloud/gophertelekomcloud"
+	"github.com/opentelekomcloud/gophertelekomcloud/openstack"
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/cce/v3/clusters"
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/cce/v3/nodes"
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/compute/v2/extensions/keypairs"
@@ -19,8 +20,6 @@ import (
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/networking/v2/extensions/lbaas_v2/loadbalancers"
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/networking/v2/extensions/lbaas_v2/monitors"
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/networking/v2/extensions/lbaas_v2/pools"
-
-	"github.com/opentelekomcloud-infra/crutch-house/clientconfig"
 )
 
 const (
@@ -113,15 +112,11 @@ type client struct {
 	VPC       *golangsdk.ServiceClient
 	CCE       *golangsdk.ServiceClient
 
-	opts *clientconfig.ClientOpts
+	env openstack.Env
 }
 
-func NewClient(opts *clientconfig.ClientOpts) Client {
-	opts.EndpointType = clientconfig.GetEndpointType(opts.EndpointType)
-	if opts.RegionName == "" {
-		opts.RegionName = defaultRegion
-	}
-	return &client{opts: opts}
+func NewClient(prefix string) Client {
+	return &client{env: openstack.NewEnv(prefix)}
 }
 
 var userAgent = fmt.Sprintf("otc-crutch-house/v0.1")
@@ -131,7 +126,7 @@ func (c *client) Authenticate() error {
 	if c.Provider != nil {
 		return nil
 	}
-	authClient, err := clientconfig.AuthenticatedClient(c.opts)
+	authClient, err := c.env.AuthenticatedClient()
 	if err != nil {
 		return err
 	}
@@ -141,10 +136,6 @@ func (c *client) Authenticate() error {
 }
 
 func (c *client) Token() (string, error) {
-	if c.opts.AuthInfo.Token != "" {
-		return c.opts.AuthInfo.Token, nil
-	}
-
 	if token := c.Provider.Token(); token != "" {
 		return token, nil
 	}

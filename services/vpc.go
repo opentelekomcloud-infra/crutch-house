@@ -28,7 +28,7 @@ func (c *client) InitVPC() error {
 	if c.VPC != nil {
 		return nil
 	}
-	nw, err := clientconfig.NewServiceClient("vpc", c.opts)
+	nw, err := clientconfig.NewServiceClient("vpc", c.env)
 	if err != nil {
 		return err
 	}

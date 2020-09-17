@@ -17,7 +17,7 @@ func (c *client) InitECS() error {
 	if c.ECS != nil {
 		return nil
 	}
-	cmp, err := clientconfig.NewServiceClient("ecs", c.opts)
+	cmp, err := clientconfig.NewServiceClient("ecs", c.env)
 	if err != nil {
 		return fmt.Errorf("failed to init ECS: %s", err)
 	}

@@ -81,7 +81,7 @@ func (c *client) InitCCE() error {
 	if c.CCE != nil {
 		return nil
 	}
-	cce, err := clientconfig.NewServiceClient("cce", c.opts)
+	cce, err := clientconfig.NewServiceClient("cce", c.env)
 	if err != nil {
 		return err
 	}

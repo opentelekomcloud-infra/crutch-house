@@ -293,6 +293,8 @@ func GetCloudFromYAML(opts *ClientOpts) (*Cloud, error) {
 //
 // See http://docs.openstack.org/developer/os-client-config and
 // https://github.com/openstack/os-client-config/blob/master/os_client_config/config.py.
+// DEPRECATED: this will be removed in future
+// please use Auth means for opentelekomcloud/gophertelekomcloud
 func AuthOptions(opts *ClientOpts) (golangsdk.AuthOptionsProvider, error) {
 	cloud := new(Cloud)
 
@@ -675,6 +677,8 @@ func v3AKSKAuth(client *golangsdk.ProviderClient, endpoint string, options golan
 
 // AuthenticatedClient is a convenience function to get a new provider client
 // based on a clouds.yaml entry.
+// DEPRECATED: this will be removed in future
+// please use golangsdk.AuthenticatedClient means from opentelekomcloud/gophertelekomcloud
 func AuthenticatedClient(opts *ClientOpts) (client *golangsdk.ProviderClient, err error) {
 
 	ao, err := AuthOptions(opts)
@@ -710,92 +714,17 @@ func AuthenticatedClient(opts *ClientOpts) (client *golangsdk.ProviderClient, er
 }
 
 // NewServiceClient is a convenience function to get a new service client.
-func NewServiceClient(service string, opts *ClientOpts) (*golangsdk.ServiceClient, error) {
-	cloud := new(Cloud)
-
-	// If no opts were passed in, create an empty ClientOpts.
-	if opts == nil {
-		opts = new(ClientOpts)
-	}
-
-	// Determine if a clouds.yaml entry should be retrieved.
-	// Start by figuring out the cloud name.
-	// First check if one was explicitly specified in opts.
-	var cloudName string
-	if opts.Cloud != "" {
-		cloudName = opts.Cloud
-	}
-
-	// Next see if a cloud name was specified as an environment variable.
-	envPrefix := "OS_"
-	if opts.EnvPrefix != "" {
-		envPrefix = opts.EnvPrefix
-	}
-
-	if v := os.Getenv(envPrefix + "CLOUD"); v != "" {
-		cloudName = v
-	}
-
-	// If a cloud name was determined, try to look it up in clouds.yaml.
-	if cloudName != "" {
-		// Get the requested cloud.
-		var err error
-		cloud, err = GetCloudFromYAML(opts)
-		if err != nil {
-			return nil, err
-		}
-	}
-
+func NewServiceClient(service string, env openstack.Env) (*golangsdk.ServiceClient, error) {
 	// Get a Provider Client
-	pClient, err := AuthenticatedClient(opts)
+	pClient, err := env.AuthenticatedClient()
 	if err != nil {
 		return nil, err
 	}
-
-	// If an HTTPClient was specified, use it.
-	if opts.HTTPClient != nil {
-		pClient.HTTPClient = *opts.HTTPClient
-	}
-
-	// Determine the region to use.
-	// First, check if the REGION_NAME environment variable is set.
-	var region string
-	if v := os.Getenv(envPrefix + "REGION_NAME"); v != "" {
-		region = v
-	}
-
-	// Next, check if the cloud entry sets a region.
-	if v := cloud.RegionName; v != "" {
-		region = v
-	}
-
-	// Finally, see if one was specified in the ClientOpts.
-	// If so, this takes precedence.
-	if v := opts.RegionName; v != "" {
-		region = v
-	}
-
-	// Determine the endpoint type to use.
-	// First, check if the OS_INTERFACE environment variable is set.
-	var endpointType string
-	if v := os.Getenv(envPrefix + "INTERFACE"); v != "" {
-		endpointType = v
-	}
-
-	// Next, check if the cloud entry sets an endpoint type.
-	if v := cloud.EndpointType; v != "" {
-		endpointType = v
-	}
-
-	// Finally, see if one was specified in the ClientOpts.
-	// If so, this takes precedence.
-	if v := opts.EndpointType; v != "" {
-		endpointType = v
-	}
+	cloud, _ := env.Cloud() // Auth happened before, no err is expected
 
 	eo := golangsdk.EndpointOpts{
-		Region:       region,
-		Availability: golangsdk.Availability(GetEndpointType(endpointType)),
+		Region:       cloud.RegionName,
+		Availability: golangsdk.Availability(GetEndpointType(cloud.EndpointType)),
 	}
 
 	switch service {

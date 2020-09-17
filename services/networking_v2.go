@@ -20,7 +20,7 @@ func (c *client) InitNetworkV2() error {
 	if c.NetworkV2 != nil {
 		return nil
 	}
-	nw, err := clientconfig.NewServiceClient("network", c.opts)
+	nw, err := clientconfig.NewServiceClient("network", c.env)
 	if err != nil {
 		return err
 	}
