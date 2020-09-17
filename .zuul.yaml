@@ -1,0 +1,9 @@
+- project:
+    check:
+      jobs:
+        - golangci-lint
+        - golang-make-functional
+    gate:
+      jobs:
+        - golangci-lint
+        - golang-make-functional

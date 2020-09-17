@@ -40,6 +40,9 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// AuthType represents a valid method of authentication.
+type AuthType string
+
 // ClientOpts represents options to customize the way a client is
 // configured.
 type ClientOpts struct {
@@ -48,6 +51,10 @@ type ClientOpts struct {
 
 	// EnvPrefix allows a custom environment variable prefix to be used.
 	EnvPrefix string
+
+	// AuthType specifies the type of authentication to use.
+	// By default, this is "password".
+	AuthType AuthType
 
 	// AuthInfo defines the authentication information needed to
 	// authenticate to a cloud when clouds.yaml isn't used.
