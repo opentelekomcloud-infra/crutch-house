@@ -39,10 +39,10 @@ import (
 )
 
 var (
-	ErrKeyGeneration     = errors.New("Unable to generate key")
-	ErrValidation        = errors.New("Unable to validate key")
-	ErrPublicKey         = errors.New("Unable to convert public key")
-	ErrUnableToWriteFile = errors.New("Unable to write file")
+	ErrKeyGeneration     = errors.New("unable to generate key")
+	ErrValidation        = errors.New("unable to validate key")
+	ErrPublicKey         = errors.New("unable to convert public key")
+	ErrUnableToWriteFile = errors.New("unable to write file")
 )
 
 type KeyPair struct {
