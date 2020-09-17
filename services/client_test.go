@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 
-	"github.com/opentelekomcloud-infra/crutch-house/clientconfig"
 	"github.com/opentelekomcloud-infra/crutch-house/utils"
 )
 
@@ -14,6 +14,10 @@ const (
 	authFailedMessage = "failed to authorize client"
 	invalidFind       = "found %s is not what we want!"
 	defaultAuthURL    = "https://iam.eu-de.otc.t-systems.com/v3"
+
+	prefNoCloud = "ANC_"
+	prefAKSK    = "AKSK_"
+	prefToken   = "TOK_"
 )
 
 var (
@@ -22,46 +26,84 @@ var (
 	sgName     = utils.RandomString(12, "sg-")
 )
 
+// copyEnvVars returning list of set vars
+func copyEnvVars(toPrefix string, vars ...string) (setVars []string) {
+	_ = os.Setenv(toPrefix+"AUTH_URL", defaultAuthURL)
+	for _, v := range vars {
+		value := os.Getenv("OTC_" + v)
+		key := toPrefix + v
+		setVars = append(setVars, key)
+		_ = os.Setenv(key, value)
+	}
+	return
+}
+
+func cleanUpEnvVars(vars []string) {
+	for _, v := range vars {
+		_ = os.Unsetenv(v)
+	}
+}
+
 func authClient(t *testing.T) Client {
-	client := NewClient(&clientconfig.ClientOpts{})
+	pref := utils.RandomString(4, "", "ABCDEFGHIJKLMNOPQRSTUVWXYZ") + "_"
+	// set common env vars
+	setVars := copyEnvVars(pref, "USERNAME", "PROJECT_NAME", "PASSWORD", "DOMAIN_NAME")
+	defer cleanUpEnvVars(setVars)
+
+	client := NewClient(pref)
 	err := client.Authenticate()
 	require.NoError(t, err, authFailedMessage)
 	return client
 }
 
+func (s *ClientTestSuite) TestClient_Authenticate() {
+	authClient(s.T())
+}
+
+func (s *ClientTestSuite) TestClient_AuthenticateNoCloud() {
+	pref := prefNoCloud
+	client := NewClient(pref)
+	err := client.Authenticate()
+	require.NoError(s.T(), err, authFailedMessage, err)
+}
+
+func (s *ClientTestSuite) TestClient_AuthenticateAKSK() {
+	client := NewClient(prefAKSK)
+	err := client.Authenticate()
+	require.NoError(s.T(), err, authFailedMessage, err)
+}
+
+func (s *ClientTestSuite) TestClient_AuthenticateToken() {
+	client := NewClient(prefToken)
+	err := client.Authenticate()
+	require.NoError(s.T(), err, authFailedMessage, err)
+}
+
+type ClientTestSuite struct {
+	vars []string
+	suite.Suite
+}
+
+func (s *ClientTestSuite) SetupSuite() {
+	s.vars = make([]string, 0, 10)
+
+	// pw, no cloud
+	vars := copyEnvVars(prefNoCloud, "USERNAME", "PROJECT_NAME", "PASSWORD", "DOMAIN_NAME")
+	s.vars = append(s.vars, vars...)
+
+	// ak/sk
+	vars = copyEnvVars(prefAKSK, "ACCESS_KEY_ID", "PROJECT_NAME", "ACCESS_KEY_SECRET")
+	s.vars = append(s.vars, vars...)
+
+	// token
+	vars = copyEnvVars(prefToken, "TOKEN")
+	s.vars = append(s.vars, vars...)
+}
+
+func (s *ClientTestSuite) TearDownSuite() {
+	cleanUpEnvVars(s.vars)
+}
+
 func TestClient_Authenticate(t *testing.T) {
-	authClient(t)
-}
-
-func TestClient_AuthenticateNoCloud(t *testing.T) {
-	client := NewClient(
-		&clientconfig.ClientOpts{
-			RegionName:   defaultRegion,
-			EndpointType: clientconfig.DefaultEndpointType,
-			AuthInfo: &clientconfig.AuthInfo{
-				AuthURL:     defaultAuthURL,
-				Username:    os.Getenv("OTC_USERNAME"),
-				Password:    os.Getenv("OTC_PASSWORD"),
-				ProjectName: os.Getenv("OTC_PROJECT_NAME"),
-				DomainName:  os.Getenv("OTC_DOMAIN_NAME"),
-			},
-		})
-	err := client.Authenticate()
-	require.NoError(t, err, authFailedMessage)
-}
-
-func TestClient_AuthenticateAKSK(t *testing.T) {
-	client := NewClient(
-		&clientconfig.ClientOpts{
-			RegionName:   defaultRegion,
-			EndpointType: clientconfig.DefaultEndpointType,
-			AuthInfo: &clientconfig.AuthInfo{
-				AuthURL:     defaultAuthURL,
-				AccessKey:   os.Getenv("OTC_ACCESS_KEY_ID"),
-				SecretKey:   os.Getenv("OTC_ACCESS_KEY_SECRET"),
-				ProjectName: os.Getenv("OTC_PROJECT_NAME"),
-			},
-		})
-	err := client.Authenticate()
-	require.NoError(t, err, authFailedMessage)
+	suite.Run(t, new(ClientTestSuite))
 }
