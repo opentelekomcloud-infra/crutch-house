@@ -108,5 +108,6 @@ func (s *ClientTestSuite) TearDownSuite() {
 }
 
 func TestClient_Authenticate(t *testing.T) {
+	t.Skip()
 	suite.Run(t, new(ClientTestSuite))
 }
