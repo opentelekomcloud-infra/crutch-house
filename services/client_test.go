@@ -45,10 +45,7 @@ func cleanUpEnvVars(vars []string) {
 }
 
 func authClient(t *testing.T) Client {
-	pref := utils.RandomString(4, "", "ABCDEFGHIJKLMNOPQRSTUVWXYZ") + "_"
-	// set common env vars
-	setVars := copyEnvVars(pref, "USERNAME", "PROJECT_NAME", "PASSWORD", "DOMAIN_NAME")
-	defer cleanUpEnvVars(setVars)
+	pref := "OS_"
 
 	client := NewClient(pref)
 	err := client.Authenticate()
