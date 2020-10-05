@@ -306,8 +306,6 @@ func GetCloudFromYAML(opts *ClientOpts) (*Cloud, error) {
 // DEPRECATED: this will be removed in future
 // please use Auth means for opentelekomcloud/gophertelekomcloud
 func AuthOptions(opts *ClientOpts) (golangsdk.AuthOptionsProvider, error) {
-	cloud := new(Cloud)
-
 	// If no opts were passed in, create an empty ClientOpts.
 	if opts == nil {
 		opts = new(ClientOpts)
