@@ -1,4 +1,6 @@
 - project:
+    vars:
+      functest_project_name: "eu-de_zuul_go"
     check:
       jobs:
         - golangci-lint
