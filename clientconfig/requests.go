@@ -742,19 +742,15 @@ func NewServiceClient(service string, env openstack.Env) (*golangsdk.ServiceClie
 
 	switch service {
 	case "ecs":
-		return openstack.NewEcsV1(pClient, eo)
+		return openstack.NewComputeV1(pClient, eo)
 	case "compute":
 		return openstack.NewComputeV2(pClient, eo)
-	case "database":
-		return openstack.NewDBV1(pClient, eo)
 	case "dns":
 		return openstack.NewDNSV2(pClient, eo)
 	case "identity":
 		return openstack.NewIdentityV3(pClient, eo)
 	case "image":
 		return openstack.NewImageServiceV2(pClient, eo)
-	case "load-balancer":
-		return openstack.NewLoadBalancerV2(pClient, eo)
 	case "vpc":
 		return openstack.NewNetworkV1(pClient, eo)
 	case "network":
