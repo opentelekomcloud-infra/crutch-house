@@ -23,9 +23,8 @@ import (
 )
 
 const (
-	maxAttempts   = 50
-	waitInterval  = 5 * time.Second
-	defaultRegion = "eu-de"
+	maxAttempts  = 50
+	waitInterval = 5 * time.Second
 )
 
 type Client interface {

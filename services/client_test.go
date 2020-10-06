@@ -1,19 +1,19 @@
 package services
 
 import (
+	"github.com/stretchr/testify/suite"
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
-
 	"github.com/opentelekomcloud-infra/crutch-house/utils"
+	"github.com/stretchr/testify/require"
 )
 
 const (
 	authFailedMessage = "failed to authorize client"
 	invalidFind       = "found %s is not what we want!"
-	defaultAuthURL    = "https://iam.eu-de.otc.t-systems.com/v3"
+
+	defaultAuthURL = "https://iam.eu-de.otc.t-systems.com/v3"
 
 	prefNoCloud = "ANC_"
 	prefAKSK    = "AKSK_"
@@ -45,10 +45,7 @@ func cleanUpEnvVars(vars []string) {
 }
 
 func authClient(t *testing.T) Client {
-	pref := utils.RandomString(4, "", "ABCDEFGHIJKLMNOPQRSTUVWXYZ") + "_"
-	// set common env vars
-	setVars := copyEnvVars(pref, "USERNAME", "PROJECT_NAME", "PASSWORD", "DOMAIN_NAME")
-	defer cleanUpEnvVars(setVars)
+	pref := "OS_"
 
 	client := NewClient(pref)
 	err := client.Authenticate()
@@ -111,5 +108,19 @@ func (s *ClientTestSuite) TearDownSuite() {
 }
 
 func TestClient_Authenticate(t *testing.T) {
+	if !lookUpEnvVars("OTC_", "USERNAME", "PROJECT_NAME",
+		"PASSWORD", "DOMAIN_NAME", "ACCESS_KEY_ID", "PROJECT_NAME",
+		"ACCESS_KEY_SECRET", "TOKEN") {
+		t.Skip()
+	}
 	suite.Run(t, new(ClientTestSuite))
+}
+
+func lookUpEnvVars(prefix string, vars ...string) bool {
+	for _, v := range vars {
+		if _, flag := os.LookupEnv(prefix + v); !flag {
+			return false
+		}
+	}
+	return true
 }
