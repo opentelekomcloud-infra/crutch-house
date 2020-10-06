@@ -1,4 +1,5 @@
 - project:
+    merge-mode: squash-merge
     vars:
       functest_project_name: "eu-de_zuul_go"
     check:
