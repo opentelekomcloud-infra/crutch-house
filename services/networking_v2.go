@@ -9,8 +9,6 @@ import (
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/networking/v2/extensions/lbaas_v2/loadbalancers"
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/networking/v2/extensions/lbaas_v2/monitors"
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/networking/v2/extensions/lbaas_v2/pools"
-
-	"github.com/opentelekomcloud-infra/crutch-house/clientconfig"
 )
 
 const LBStateActive = "ACTIVE"
@@ -20,7 +18,7 @@ func (c *client) InitNetworkV2() error {
 	if c.NetworkV2 != nil {
 		return nil
 	}
-	nw, err := clientconfig.NewServiceClient("network", c.env)
+	nw, err := c.NewServiceClient("network")
 	if err != nil {
 		return err
 	}

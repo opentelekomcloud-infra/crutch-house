@@ -17,8 +17,6 @@ import (
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/compute/v2/servers"
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/imageservice/v2/images"
 	"github.com/opentelekomcloud/gophertelekomcloud/pagination"
-
-	"github.com/opentelekomcloud-infra/crutch-house/clientconfig"
 )
 
 // Instance statuses
@@ -32,7 +30,7 @@ func (c *client) InitCompute() error {
 	if c.ComputeV2 != nil {
 		return nil
 	}
-	cmp, err := clientconfig.NewServiceClient("compute", c.env)
+	cmp, err := c.NewServiceClient("compute")
 	if err != nil {
 		return err
 	}

@@ -20,11 +20,14 @@ import (
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/networking/v2/extensions/lbaas_v2/loadbalancers"
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/networking/v2/extensions/lbaas_v2/monitors"
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/networking/v2/extensions/lbaas_v2/pools"
+
+	"github.com/opentelekomcloud-infra/crutch-house/clientconfig"
 )
 
 const (
-	maxAttempts  = 50
-	waitInterval = 5 * time.Second
+	maxAttempts   = 50
+	waitInterval  = 5 * time.Second
+	defaultRegion = "eu-de"
 )
 
 type Client interface {
@@ -111,11 +114,20 @@ type client struct {
 	VPC       *golangsdk.ServiceClient
 	CCE       *golangsdk.ServiceClient
 
-	env openstack.Env
+	cloud *openstack.Cloud
 }
 
-func NewClient(prefix string) Client {
-	return &client{env: openstack.NewEnv(prefix)}
+func NewCloudClient(cloud *openstack.Cloud) Client {
+	return &client{cloud: cloud}
+}
+
+func NewClient(prefix string) (Client, error) {
+	env := openstack.NewEnv(prefix)
+	cloud, err := env.Cloud()
+	if err != nil {
+		return nil, fmt.Errorf("failed to load cloud config: %s", err)
+	}
+	return &client{cloud: cloud}, nil
 }
 
 var userAgent = fmt.Sprintf("otc-crutch-house/v0.1")
@@ -125,7 +137,7 @@ func (c *client) Authenticate() error {
 	if c.Provider != nil {
 		return nil
 	}
-	authClient, err := c.env.AuthenticatedClient()
+	authClient, err := openstack.AuthenticatedClientFromCloud(c.cloud)
 	if err != nil {
 		return err
 	}
@@ -145,4 +157,62 @@ func (c *client) Token() (string, error) {
 
 	return c.Provider.Token(), nil
 
+}
+
+// NewServiceClient is a convenience function to get a new service client.
+func (c *client) NewServiceClient(service string) (*golangsdk.ServiceClient, error) {
+	if err := c.Authenticate(); err != nil {
+		return nil, err
+	}
+	region := c.cloud.RegionName
+	if region == "" {
+		region = defaultRegion
+	}
+	eo := golangsdk.EndpointOpts{
+		Region:       region,
+		Availability: golangsdk.Availability(clientconfig.GetEndpointType(c.cloud.EndpointType)),
+	}
+
+	switch service {
+	case "ecs":
+		return openstack.NewComputeV1(c.Provider, eo)
+	case "compute":
+		return openstack.NewComputeV2(c.Provider, eo)
+	case "dns":
+		return openstack.NewDNSV2(c.Provider, eo)
+	case "identity":
+		return openstack.NewIdentityV3(c.Provider, eo)
+	case "image":
+		return openstack.NewImageServiceV2(c.Provider, eo)
+	case "vpc":
+		return openstack.NewNetworkV1(c.Provider, eo)
+	case "network":
+		return openstack.NewNetworkV2(c.Provider, eo)
+	case "object-store":
+		return openstack.NewObjectStorageV1(c.Provider, eo)
+	case "cce":
+		return openstack.NewCCE(c.Provider, eo)
+	case "orchestration":
+		return openstack.NewOrchestrationV1(c.Provider, eo)
+	case "sharev2":
+		return openstack.NewSharedFileSystemV2(c.Provider, eo)
+	case "volume":
+		volumeVersion := "2"
+		if v := c.cloud.VolumeAPIVersion; v != "" {
+			volumeVersion = v
+		}
+
+		switch volumeVersion {
+		case "v1", "1":
+			return openstack.NewBlockStorageV1(c.Provider, eo)
+		case "v2", "2":
+			return openstack.NewBlockStorageV2(c.Provider, eo)
+		case "v3", "3":
+			return openstack.NewBlockStorageV3(c.Provider, eo)
+		default:
+			return nil, fmt.Errorf("invalid volume API version")
+		}
+	}
+
+	return nil, fmt.Errorf("unable to create a service client for %s", service)
 }

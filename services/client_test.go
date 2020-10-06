@@ -1,12 +1,15 @@
 package services
 
 import (
-	"github.com/stretchr/testify/suite"
 	"os"
 	"testing"
 
-	"github.com/opentelekomcloud-infra/crutch-house/utils"
+	"github.com/opentelekomcloud/gophertelekomcloud/openstack"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/stretchr/testify/require"
+
+	"github.com/opentelekomcloud-infra/crutch-house/utils"
 )
 
 const (
@@ -47,10 +50,20 @@ func cleanUpEnvVars(vars []string) {
 func authClient(t *testing.T) Client {
 	pref := "OS_"
 
-	client := NewClient(pref)
-	err := client.Authenticate()
+	client, err := NewClient(pref)
+	require.NoError(t, err)
+	err = client.Authenticate()
 	require.NoError(t, err, authFailedMessage)
 	return client
+}
+
+func (s *ClientTestSuite) TestClient_AuthenticateAlternative() {
+	env := openstack.NewEnv("OS_")
+	cloud, err := env.Cloud()
+	require.NoError(s.T(), err)
+	client := NewCloudClient(cloud)
+	err = client.Authenticate()
+	require.NoError(s.T(), err, authFailedMessage)
 }
 
 func (s *ClientTestSuite) TestClient_Authenticate() {
@@ -59,14 +72,16 @@ func (s *ClientTestSuite) TestClient_Authenticate() {
 
 func (s *ClientTestSuite) TestClient_AuthenticateNoCloud() {
 	pref := prefNoCloud
-	client := NewClient(pref)
-	err := client.Authenticate()
+	client, err := NewClient(pref)
+	require.NoError(s.T(), err)
+	err = client.Authenticate()
 	require.NoError(s.T(), err, authFailedMessage, err)
 }
 
 func (s *ClientTestSuite) TestClient_AuthenticateAKSK() {
-	client := NewClient(prefAKSK)
-	err := client.Authenticate()
+	client, err := NewClient(prefAKSK)
+	require.NoError(s.T(), err)
+	err = client.Authenticate()
 	require.NoError(s.T(), err, authFailedMessage, err)
 }
 
@@ -77,7 +92,8 @@ func (s *ClientTestSuite) TestClient_AuthenticateToken() {
 	s.Require().NoError(err)
 	s.Require().NoError(os.Setenv(prefToken+"TOKEN", tok))
 
-	client := NewClient(prefToken)
+	client, err := NewClient(prefToken)
+	require.NoError(s.T(), err)
 	err = client.Authenticate()
 	require.NoError(s.T(), err, authFailedMessage, err)
 }

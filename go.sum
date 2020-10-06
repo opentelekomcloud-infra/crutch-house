@@ -10,8 +10,8 @@ github.com/hashicorp/errwrap v1.1.0 h1:OxrOeh75EUXMY8TBjag2fzXGZ40LB6IKw45YeGUDY
 github.com/hashicorp/errwrap v1.1.0/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=
 github.com/hashicorp/go-multierror v1.1.0 h1:B9UzwGQJehnUY1yNrnwREHc3fGbC2xefo8g4TbElacI=
 github.com/hashicorp/go-multierror v1.1.0/go.mod h1:spPvp8C1qA32ftKqdAHm4hHTbPw+vmowP0z+KUhOZdA=
-github.com/opentelekomcloud/gophertelekomcloud v0.0.8 h1:0pKi6Hwy6eX97kLbqLNrvgsj0CRRjqlynSHpByOQilg=
-github.com/opentelekomcloud/gophertelekomcloud v0.0.8/go.mod h1:fQE9cCBZDAbTaf5abj29mF8mQKHBD0QVtNO1iOyEtrg=
+github.com/opentelekomcloud/gophertelekomcloud v0.0.9-0.20201006135536-46b58478d4ea h1:4tjrM24ESnZN8XDr1KOldKog1gRCM/Yy+c68+KKNsbk=
+github.com/opentelekomcloud/gophertelekomcloud v0.0.9-0.20201006135536-46b58478d4ea/go.mod h1:fQE9cCBZDAbTaf5abj29mF8mQKHBD0QVtNO1iOyEtrg=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/objx v0.1.0 h1:4G4v2dO3VZwixGIRoQ5Lfboy6nUhCyYzaqnIAPPhYs4=

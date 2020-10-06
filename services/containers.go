@@ -11,8 +11,6 @@ import (
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/cce/v3/nodes"
 
 	"github.com/hashicorp/go-multierror"
-
-	"github.com/opentelekomcloud-infra/crutch-house/clientconfig"
 )
 
 const (
@@ -81,7 +79,7 @@ func (c *client) InitCCE() error {
 	if c.CCE != nil {
 		return nil
 	}
-	cce, err := clientconfig.NewServiceClient("cce", c.env)
+	cce, err := c.NewServiceClient("cce")
 	if err != nil {
 		return err
 	}

@@ -85,7 +85,6 @@ type YAMLOptsBuilder interface {
 
 const (
 	cloudNotFound = "could not find cloud %s in %s"
-	defaultRegion = "eu-de"
 )
 
 // YAMLOpts represents options and methods to load a clouds.yaml file.
@@ -712,67 +711,6 @@ func AuthenticatedClient(opts *ClientOpts) (client *golangsdk.ProviderClient, er
 		return nil, err
 	}
 	return
-}
-
-// NewServiceClient is a convenience function to get a new service client.
-func NewServiceClient(service string, env openstack.Env) (*golangsdk.ServiceClient, error) {
-	// Get a Provider Client
-	pClient, err := env.AuthenticatedClient()
-	if err != nil {
-		return nil, err
-	}
-	cloud, _ := env.Cloud() // Auth happened before, no err is expected
-	region := cloud.RegionName
-	if region == "" {
-		region = defaultRegion
-	}
-	eo := golangsdk.EndpointOpts{
-		Region:       region,
-		Availability: golangsdk.Availability(GetEndpointType(cloud.EndpointType)),
-	}
-
-	switch service {
-	case "ecs":
-		return openstack.NewComputeV1(pClient, eo)
-	case "compute":
-		return openstack.NewComputeV2(pClient, eo)
-	case "dns":
-		return openstack.NewDNSV2(pClient, eo)
-	case "identity":
-		return openstack.NewIdentityV3(pClient, eo)
-	case "image":
-		return openstack.NewImageServiceV2(pClient, eo)
-	case "vpc":
-		return openstack.NewNetworkV1(pClient, eo)
-	case "network":
-		return openstack.NewNetworkV2(pClient, eo)
-	case "object-store":
-		return openstack.NewObjectStorageV1(pClient, eo)
-	case "cce":
-		return openstack.NewCCE(pClient, eo)
-	case "orchestration":
-		return openstack.NewOrchestrationV1(pClient, eo)
-	case "sharev2":
-		return openstack.NewSharedFileSystemV2(pClient, eo)
-	case "volume":
-		volumeVersion := "2"
-		if v := cloud.VolumeAPIVersion; v != "" {
-			volumeVersion = v
-		}
-
-		switch volumeVersion {
-		case "v1", "1":
-			return openstack.NewBlockStorageV1(pClient, eo)
-		case "v2", "2":
-			return openstack.NewBlockStorageV2(pClient, eo)
-		case "v3", "3":
-			return openstack.NewBlockStorageV3(pClient, eo)
-		default:
-			return nil, fmt.Errorf("invalid volume API version")
-		}
-	}
-
-	return nil, fmt.Errorf("unable to create a service client for %s", service)
 }
 
 // setDomainIfNeeded will set a DomainID and DomainName
