@@ -108,12 +108,12 @@ func (s *ClientTestSuite) TearDownSuite() {
 }
 
 func TestClient_Authenticate(t *testing.T) {
-	if lookUpEnvVars("OTC_", "USERNAME", "PROJECT_NAME",
+	if !lookUpEnvVars("OTC_", "USERNAME", "PROJECT_NAME",
 		"PASSWORD", "DOMAIN_NAME", "ACCESS_KEY_ID", "PROJECT_NAME",
 		"ACCESS_KEY_SECRET", "TOKEN") {
-		suite.Run(t, new(ClientTestSuite))
+		t.Skip()
 	}
-	t.Skip()
+	suite.Run(t, new(ClientTestSuite))
 }
 
 func lookUpEnvVars(prefix string, vars ...string) bool {
