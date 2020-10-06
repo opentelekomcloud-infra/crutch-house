@@ -8,7 +8,6 @@ import (
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/networking/v1/subnets"
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/networking/v1/vpcs"
 
-	"github.com/opentelekomcloud-infra/crutch-house/clientconfig"
 	"github.com/opentelekomcloud-infra/crutch-house/utils"
 )
 
@@ -28,7 +27,7 @@ func (c *client) InitVPC() error {
 	if c.VPC != nil {
 		return nil
 	}
-	nw, err := clientconfig.NewServiceClient("vpc", c.env)
+	nw, err := c.NewServiceClient("vpc")
 	if err != nil {
 		return err
 	}

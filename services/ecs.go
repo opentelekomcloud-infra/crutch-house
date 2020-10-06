@@ -4,8 +4,6 @@ import (
 	"fmt"
 
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/ecs/v1/cloudservers"
-
-	"github.com/opentelekomcloud-infra/crutch-house/clientconfig"
 )
 
 const (
@@ -17,7 +15,7 @@ func (c *client) InitECS() error {
 	if c.ECS != nil {
 		return nil
 	}
-	cmp, err := clientconfig.NewServiceClient("ecs", c.env)
+	cmp, err := c.NewServiceClient("ecs")
 	if err != nil {
 		return fmt.Errorf("failed to init ECS: %s", err)
 	}
