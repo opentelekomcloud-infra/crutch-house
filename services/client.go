@@ -111,11 +111,20 @@ type client struct {
 	VPC       *golangsdk.ServiceClient
 	CCE       *golangsdk.ServiceClient
 
-	env openstack.Env
+	cloud *openstack.Cloud
 }
 
-func NewClient(prefix string) Client {
-	return &client{env: openstack.NewEnv(prefix)}
+func NewCloudClient(cloud *openstack.Cloud) Client {
+	return &client{cloud: cloud}
+}
+
+func NewClient(prefix string) (Client, error) {
+	env := openstack.NewEnv(prefix)
+	cloud, err := env.Cloud()
+	if err != nil {
+		return nil, fmt.Errorf("failed to load cloud config: %s", err)
+	}
+	return &client{cloud: cloud}, nil
 }
 
 var userAgent = fmt.Sprintf("otc-crutch-house/v0.1")
@@ -125,7 +134,7 @@ func (c *client) Authenticate() error {
 	if c.Provider != nil {
 		return nil
 	}
-	authClient, err := c.env.AuthenticatedClient()
+	authClient, err := openstack.AuthenticatedClientFromCloud(c.cloud)
 	if err != nil {
 		return err
 	}
