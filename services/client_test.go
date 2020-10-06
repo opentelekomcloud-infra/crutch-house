@@ -118,9 +118,7 @@ func TestClient_Authenticate(t *testing.T) {
 
 func LookUpEnvVars(prefix string, vars ...string) bool {
 	for _, v := range vars {
-		if _, flag := os.LookupEnv(prefix + v); flag {
-			continue
-		} else {
+		if _, flag := os.LookupEnv(prefix + v); !flag {
 			return false
 		}
 	}
