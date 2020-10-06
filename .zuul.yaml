@@ -6,4 +6,5 @@
         - golangci-lint
     gate:
       jobs:
+        - golangci-lint
         - golang-make-functional
