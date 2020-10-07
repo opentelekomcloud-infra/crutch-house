@@ -1,5 +1,5 @@
 # Crutch Box
-[![Build Status](https://travis-ci.org/opentelekomcloud-infra/crutch-house.svg?branch=master)](https://travis-ci.org/opentelekomcloud-infra/crutch-house)
+[![Build Status](https://zuul.eco.tsi-dev.otc-service.com/api/tenant/eco/badge?project=opentelekomcloud-infra/crutch-house&pipeline=gate)](https://zuul.eco.tsi-dev.otc-service.com/t/eco/builds?project=opentelekomcloud-infra%2Fcrutch-house&pipeline=gate)
 [![codecov](https://codecov.io/gh/opentelekomcloud-infra/crutch-house/branch/master/graph/badge.svg)](https://codecov.io/gh/opentelekomcloud-infra/crutch-house)
 
 Crutch box is a Go library of high-level helper functions for OpenTelekomCloud
