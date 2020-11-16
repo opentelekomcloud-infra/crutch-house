@@ -32,6 +32,7 @@ const (
 
 type Client interface {
 	Authenticate() error
+	NewServiceClient(service string) (*golangsdk.ServiceClient, error)
 	Token() (string, error)
 	InitVPC() error
 	CreateVPC(vpcName string) (*vpcs.Vpc, error)
