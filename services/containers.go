@@ -104,7 +104,7 @@ func (c *client) getNodeStatus(clusterID, nodeIDs string) (string, error) {
 }
 
 func (c *client) waitForCluster(clusterID string) error {
-	return golangsdk.WaitFor(600, func() (b bool, err error) {
+	return golangsdk.WaitFor(20*60, func() (b bool, err error) {
 		state, err := c.getClusterStatus(clusterID)
 		if err != nil {
 			return true, err
@@ -117,7 +117,7 @@ func (c *client) waitForCluster(clusterID string) error {
 }
 
 func (c *client) waitForClusterDelete(clusterID string) error {
-	return golangsdk.WaitFor(600, func() (bool, error) {
+	return golangsdk.WaitFor(30*60, func() (bool, error) {
 		_, err := c.getClusterStatus(clusterID)
 		if err == nil {
 			return false, nil
@@ -209,7 +209,7 @@ func (c *client) waitForMultipleNodes(clusterID string, nodeIDs []string, predic
 	var errChan = make(chan error, len(nodeIDs))
 	for _, nodeID := range nodeIDs {
 		go func(node string) {
-			errChan <- golangsdk.WaitFor(600, func() (bool, error) {
+			errChan <- golangsdk.WaitFor(20*60, func() (bool, error) {
 				nodeStatus, err := c.getNodeStatus(clusterID, node)
 				return predicate(nodeStatus, err)
 			})
