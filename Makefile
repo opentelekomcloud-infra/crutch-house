@@ -25,5 +25,5 @@ vet:
 acceptance:
 	@echo "Starting acceptance tests..."
 	@go test -v -race github.com/opentelekomcloud-infra/crutch-house/clientconfig
-	@go test -v -race -timeout 60m -parallel 2 github.com/opentelekomcloud-infra/crutch-house/services
+	@go test -v -race -timeout 60m github.com/opentelekomcloud-infra/crutch-house/services
 
