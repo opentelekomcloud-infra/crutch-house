@@ -140,7 +140,10 @@ func (c *client) waitForClusterDelete(clusterID string) error {
 			return true, err
 		}
 	})
-	return fmt.Errorf("error waiting cluster %s to be deleted: %s", clusterID, err)
+	if err != nil {
+		return fmt.Errorf("error waiting cluster %s to be deleted: %s", clusterID, err)
+	}
+	return nil
 }
 
 // CreateCluster create CCE cluster and wait until it is available
