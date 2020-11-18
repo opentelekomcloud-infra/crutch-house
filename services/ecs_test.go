@@ -25,22 +25,28 @@ func TestClient_CreateNewECS(t *testing.T) {
 	grp, err := createServerGroup(client)
 	require.NoError(t, err)
 	defer deleteServerGroup(client, grp.ID)
+	t.Log("Server group created")
 
 	vpc, err := client.CreateVPC(vpcName)
 	require.NoError(t, err)
 	defer deleteVPC(t, vpc.ID)
+	t.Log("VPC created")
 
 	subnet, err := client.CreateSubnet(vpc.ID, subnetName)
 	require.NoError(t, err)
 	defer deleteSubnet(t, vpc.ID, subnet.ID)
+	require.NoError(t, client.WaitForSubnetStatus(subnet.ID, "ACTIVE"))
+	t.Log("Subnet created")
 
 	sg, err := client.CreateSecurityGroup(sgName, PortRange{From: 22})
 	require.NoError(t, err)
 	defer func() { _ = client.DeleteSecurityGroup(sg.ID) }()
+	t.Log("Security group created")
 
 	kp, err := client.CreateKeyPair(kpName, "")
 	require.NoError(t, err)
 	defer func() { _ = client.DeleteKeyPair(kpName) }()
+	t.Log("Key pair created")
 
 	imgRef, err := client.FindImage(defaultImage)
 	require.NoError(t, err)
@@ -69,6 +75,8 @@ func TestClient_CreateNewECS(t *testing.T) {
 	id, err := cl.CreateECSInstance(opts, defaultTimeout)
 	require.NoError(t, err)
 	require.NotEmpty(t, id)
+	t.Log("Instance created")
 
 	assert.NoError(t, cl.DeleteECSInstance(id))
+	t.Log("Instance deleted")
 }

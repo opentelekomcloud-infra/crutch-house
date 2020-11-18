@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/opentelekomcloud/gophertelekomcloud"
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/cce/v3/clusters"
@@ -117,11 +118,21 @@ func (c *client) waitForCluster(clusterID string) error {
 }
 
 func (c *client) waitForClusterDelete(clusterID string) error {
-	return golangsdk.WaitFor(30*60, func() (bool, error) {
+	finishedChan := make(chan bool)
+	go func() {
+		for !<-finishedChan {
+			log.Printf("Still waiting for cluster %s to be deleted", clusterID)
+		}
+	}()
+
+	err := golangsdk.WaitFor(30*60, func() (bool, error) {
 		_, err := c.getClusterStatus(clusterID)
 		if err == nil {
+			time.Sleep(1 * time.Minute)
+			finishedChan <- false
 			return false, nil
 		}
+		finishedChan <- true
 		switch err.(type) {
 		case golangsdk.ErrDefault404:
 			return true, nil
@@ -129,6 +140,10 @@ func (c *client) waitForClusterDelete(clusterID string) error {
 			return true, err
 		}
 	})
+	if err != nil {
+		return fmt.Errorf("error waiting cluster %s to be deleted: %s", clusterID, err)
+	}
+	return nil
 }
 
 // CreateCluster create CCE cluster and wait until it is available
