@@ -15,7 +15,7 @@ lint:
 
 vet:
 	@echo "go vet ."
-	@go vet $$(go list ./... | grep -v vendor/) ; if [ $$? -eq 1 ]; then \
+	@go vet ./... ; if [ $$? -eq 1 ]; then \
 		echo ""; \
 		echo "Vet found suspicious constructs. Please check the reported constructs"; \
 		echo "and fix them if necessary before submitting the code for review."; \
@@ -24,4 +24,6 @@ vet:
 
 acceptance:
 	@echo "Starting acceptance tests..."
-	@go test ./... -race -covermode=atomic -coverprofile=coverage.txt -timeout 60m -parallel=2 -v
+	@go test -v -race github.com/opentelekomcloud-infra/crutch-house/clientconfig
+	@go test -v -race -timeout 60m -parallel 2 github.com/opentelekomcloud-infra/crutch-house/services
+
