@@ -26,15 +26,18 @@ func TestClient_ClusterLifecycle(t *testing.T) {
 	vpc, err := client.CreateVPC(vpcName)
 	require.NoError(t, err)
 	defer deleteVPC(t, vpc.ID)
+	t.Logf("VPC for CCE created: %s", vpc.Name)
 
 	subnet, err := client.CreateSubnet(vpc.ID, subnetName)
 	require.NoError(t, err)
 	defer deleteSubnet(t, vpc.ID, subnet.ID)
 	require.NoError(t, client.WaitForSubnetStatus(subnet.ID, "ACTIVE"))
+	t.Logf("Subnet for CCE created: %s", subnet.Name)
 
 	ip, err := client.CreateEIP(&ElasticIPOpts{})
 	require.NoError(t, err)
 	defer func() { _ = client.DeleteFloatingIP(ip.PublicAddress) }()
+	t.Logf("EIP for CCE created: %s", ip.PublicAddress)
 
 	clusterName := utils.RandomString(10, "crutch-", "0123456789abcdefghijklmnopqrstuvwxyz")
 	opts := &CreateClusterOpts{
@@ -54,10 +57,12 @@ func TestClient_ClusterLifecycle(t *testing.T) {
 	kp, err := client.CreateKeyPair(kpName, "")
 	require.NoError(t, err)
 	defer func() { _ = client.DeleteKeyPair(kpName) }()
+	t.Logf("Key pair for CCE created: %s", vpc.Name)
 
 	cluster, err := client.CreateCluster(opts)
 	require.NoError(t, err)
 	clusterID := cluster.Metadata.Id
+	t.Logf("CCE cluster created: %s", clusterID)
 
 	nodeOpts := &CreateNodesOpts{
 		Name:             "node-test",
@@ -81,6 +86,7 @@ func TestClient_ClusterLifecycle(t *testing.T) {
 	nodeCount := 2
 	created, err := client.CreateNodes(nodeOpts, nodeCount)
 	require.NoError(t, err)
+	t.Logf("CCE cluster nodes created: %s", created)
 
 	status, err := client.GetNodesStatus(clusterID, created)
 	assert.NoError(t, err)
@@ -88,5 +94,7 @@ func TestClient_ClusterLifecycle(t *testing.T) {
 	assert.NotContains(t, status, "")
 
 	assert.NoError(t, client.DeleteNodes(clusterID, created))
+	t.Log("CCE cluster nodes deleted")
 	assert.NoError(t, client.DeleteCluster(clusterID))
+	t.Log("CCE cluster deleted")
 }
