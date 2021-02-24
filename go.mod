@@ -9,5 +9,4 @@ require (
 	github.com/opentelekomcloud/gophertelekomcloud v0.2.6
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
-	gopkg.in/yaml.v2 v2.4.0
 )

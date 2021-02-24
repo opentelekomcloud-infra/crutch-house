@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/opentelekomcloud/gophertelekomcloud"
@@ -20,14 +21,12 @@ import (
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/networking/v2/extensions/lbaas_v2/loadbalancers"
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/networking/v2/extensions/lbaas_v2/monitors"
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/networking/v2/extensions/lbaas_v2/pools"
-
-	"github.com/opentelekomcloud-infra/crutch-house/clientconfig"
 )
 
 const (
-	maxAttempts   = 50
-	waitInterval  = 5 * time.Second
-	defaultRegion = "eu-de"
+	maxAttempts         = 50
+	waitInterval        = 5 * time.Second
+	defaultEndpointType = golangsdk.AvailabilityPublic
 )
 
 type Client interface {
@@ -135,29 +134,38 @@ var userAgent = fmt.Sprintf("otc-crutch-house/v0.1")
 
 // AuthenticateWithToken authenticate client in the cloud with token (either directly or via username/password)
 func (c *client) Authenticate() error {
-	if c.Provider != nil {
+	if c.Provider != nil && c.Provider.Token() != "" {
 		return nil
 	}
-	authClient, err := openstack.AuthenticatedClientFromCloud(c.cloud)
+	providerClient, err := openstack.AuthenticatedClientFromCloud(c.cloud)
 	if err != nil {
 		return err
 	}
-	c.Provider = authClient
+	c.Provider = providerClient
 	c.Provider.UserAgent.Prepend(userAgent)
 	return nil
 }
 
 func (c *client) Token() (string, error) {
-	if token := c.Provider.Token(); token != "" {
-		return token, nil
+	if c.Provider == nil || c.Provider.Token() == "" {
+		if err := c.Authenticate(); err != nil {
+			return "", err
+		}
 	}
-
-	if err := c.Authenticate(); err != nil {
-		return "", err
-	}
-
 	return c.Provider.Token(), nil
+}
 
+var validEndpointTypes = []string{"public", "internal", "admin"}
+
+// getAvailability is a helper method to determine the endpoint type
+// requested by the user.
+func getAvailability(endpointType string) golangsdk.Availability {
+	for _, eType := range validEndpointTypes {
+		if strings.HasPrefix(endpointType, eType) {
+			return golangsdk.Availability(eType)
+		}
+	}
+	return defaultEndpointType
 }
 
 // NewServiceClient is a convenience function to get a new service client.
@@ -165,13 +173,9 @@ func (c *client) NewServiceClient(service string) (*golangsdk.ServiceClient, err
 	if err := c.Authenticate(); err != nil {
 		return nil, err
 	}
-	region := c.cloud.RegionName
-	if region == "" {
-		region = defaultRegion
-	}
 	eo := golangsdk.EndpointOpts{
-		Region:       region,
-		Availability: golangsdk.Availability(clientconfig.GetEndpointType(c.cloud.EndpointType)),
+		Region:       c.cloud.RegionName,
+		Availability: getAvailability(c.cloud.EndpointType),
 	}
 
 	switch service {
