@@ -131,7 +131,7 @@ func NewClient(prefix string) (Client, error) {
 	return &client{cloud: cloud}, nil
 }
 
-var userAgent = fmt.Sprintf("otc-crutch-house/v0.1")
+var userAgent = fmt.Sprintf("otc-crutch-house/v0.2.4")
 
 // AuthenticateWithToken authenticate client in the cloud with token (either directly or via username/password)
 func (c *client) Authenticate() error {
