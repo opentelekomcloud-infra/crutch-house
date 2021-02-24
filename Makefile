@@ -3,8 +3,7 @@ export PATH:=/usr/local/go/bin:$(PATH)
 
 
 default: test
-test: vet
-acceptance: test-acc
+test: vet acceptance
 
 fmt:
 	@echo Running go fmt
@@ -23,8 +22,7 @@ vet:
 		exit 1; \
 	fi
 
-test-acc:
+acceptance:
 	@echo "Starting acceptance tests..."
 	@go test -v -race github.com/opentelekomcloud-infra/crutch-house/clientconfig
 	@go test -v -race -timeout 60m github.com/opentelekomcloud-infra/crutch-house/services
-
