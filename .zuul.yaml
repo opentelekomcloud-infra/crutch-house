@@ -6,9 +6,9 @@
     check:
       jobs:
         - golangci-lint
-        - golang-make-test
+        - golang-make-vet
     gate:
       jobs:
         - golangci-lint
-        - golang-make-test
+        - golang-make-vet
         - golang-make-functional
