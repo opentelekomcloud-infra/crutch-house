@@ -5,9 +5,8 @@ import (
 	"testing"
 
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack"
-	"github.com/stretchr/testify/suite"
-
 	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 
 	"github.com/opentelekomcloud-infra/crutch-house/utils"
 )
@@ -124,19 +123,24 @@ func (s *ClientTestSuite) TearDownSuite() {
 }
 
 func TestClient_Authenticate(t *testing.T) {
-	if !lookUpEnvVars("OTC_", "USERNAME", "PROJECT_NAME",
-		"PASSWORD", "DOMAIN_NAME", "ACCESS_KEY_ID", "PROJECT_NAME",
-		"ACCESS_KEY_SECRET", "TOKEN") {
-		t.Skip()
+	ok, missing := lookUpEnvVars("OTC_",
+		"USERNAME", "PROJECT_NAME", "PASSWORD", "DOMAIN_NAME", "ACCESS_KEY_ID",
+		"PROJECT_NAME", "ACCESS_KEY_SECRET", "TOKEN",
+	)
+	if !ok {
+		t.Skipf("following env vars should be set: %v", missing)
 	}
 	suite.Run(t, new(ClientTestSuite))
 }
 
-func lookUpEnvVars(prefix string, vars ...string) bool {
+func lookUpEnvVars(prefix string, vars ...string) (ok bool, missing []string) {
+	ok = true
 	for _, v := range vars {
+		key := prefix + v
 		if _, flag := os.LookupEnv(prefix + v); !flag {
-			return false
+			ok = false
+			missing = append(missing, key)
 		}
 	}
-	return true
+	return
 }

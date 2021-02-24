@@ -7,7 +7,7 @@ test: vet acceptance
 
 fmt:
 	@echo Running go fmt
-	@go fmt
+	@go fmt ./...
 
 lint:
 	@echo Running go lint
@@ -24,5 +24,4 @@ vet:
 
 acceptance:
 	@echo "Starting acceptance tests..."
-	@go test -v -race github.com/opentelekomcloud-infra/crutch-house/clientconfig
 	@go test -v -race -timeout 60m github.com/opentelekomcloud-infra/crutch-house/services
