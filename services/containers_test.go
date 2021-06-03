@@ -12,7 +12,7 @@ import (
 	"github.com/opentelekomcloud-infra/crutch-house/utils"
 )
 
-func initCCE(t *testing.T, client Client) {
+func initCCE(t *testing.T, client *Client) {
 	require.NoError(t, client.InitCCE())
 }
 

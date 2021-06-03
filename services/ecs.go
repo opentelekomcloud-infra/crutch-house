@@ -11,7 +11,7 @@ const (
 )
 
 // InitECS initializes Compute v1 (ECS) service
-func (c *client) InitECS() error {
+func (c *Client) InitECS() error {
 	if c.ECS != nil {
 		return nil
 	}
@@ -24,7 +24,7 @@ func (c *client) InitECS() error {
 }
 
 // CreateECSInstance - create new ECS instance
-func (c *client) CreateECSInstance(opts cloudservers.CreateOptsBuilder, timeoutSeconds int) (string, error) {
+func (c *Client) CreateECSInstance(opts cloudservers.CreateOptsBuilder, timeoutSeconds int) (string, error) {
 	if err := c.InitECS(); err != nil {
 		return "", err
 	}
@@ -46,14 +46,14 @@ func (c *client) CreateECSInstance(opts cloudservers.CreateOptsBuilder, timeoutS
 	return id, nil
 }
 
-func (c *client) GetECSStatus(instanceID string) (*cloudservers.CloudServer, error) {
+func (c *Client) GetECSStatus(instanceID string) (*cloudservers.CloudServer, error) {
 	if err := c.InitECS(); err != nil {
 		return nil, err
 	}
 	return cloudservers.Get(c.ECS, instanceID).Extract()
 }
 
-func (c *client) DeleteECSInstance(instanceID string) error {
+func (c *Client) DeleteECSInstance(instanceID string) error {
 	if err := c.InitECS(); err != nil {
 		return err
 	}

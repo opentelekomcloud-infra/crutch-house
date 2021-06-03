@@ -19,7 +19,7 @@ import (
 	"github.com/getlantern/deepcopy"
 )
 
-func initClients(t *testing.T, client Client) {
+func initClients(t *testing.T, client *Client) {
 	require.NoError(t, client.InitVPC())
 	require.NoError(t, client.InitNetworkV2())
 	require.NoError(t, client.InitCompute())
@@ -28,7 +28,7 @@ func initClients(t *testing.T, client Client) {
 
 const protocol = "HTTP"
 
-func createNodes(cl Client, opts *ExtendedServerOpts, netCIDR string, count int) (nodes []*servers.Server, addresses []string, err error) {
+func createNodes(cl *Client, opts *ExtendedServerOpts, netCIDR string, count int) (nodes []*servers.Server, addresses []string, err error) {
 	nodeChan := make(chan *servers.Server, count)
 	errChan := make(chan error, count)
 
@@ -71,7 +71,7 @@ func createNodes(cl Client, opts *ExtendedServerOpts, netCIDR string, count int)
 	return nodes, addresses, mErr.ErrorOrNil()
 }
 
-func deleteNodes(cl Client, nodes []*servers.Server) error {
+func deleteNodes(cl *Client, nodes []*servers.Server) error {
 	errChan := make(chan error, len(nodes))
 
 	for _, node := range nodes {
@@ -109,7 +109,7 @@ func deleteNodes(cl Client, nodes []*servers.Server) error {
 }
 
 // in-place update of servers status
-func updateNodesStatus(cl Client, nodes []*servers.Server) error {
+func updateNodesStatus(cl *Client, nodes []*servers.Server) error {
 	for i, node := range nodes {
 		nod, err := cl.GetInstanceStatus(node.ID)
 		if err != nil {
@@ -120,7 +120,7 @@ func updateNodesStatus(cl Client, nodes []*servers.Server) error {
 	return nil
 }
 
-func createMembers(cl Client, poolID string, opts *pools.CreateMemberOpts, nodes []*servers.Server, addresses []string) ([]*pools.Member, error) {
+func createMembers(cl *Client, poolID string, opts *pools.CreateMemberOpts, nodes []*servers.Server, addresses []string) ([]*pools.Member, error) {
 	memes := make([]*pools.Member, len(nodes))
 	errChan := make(chan error, len(nodes))
 	memChan := make(chan *pools.Member, len(nodes))
@@ -146,7 +146,7 @@ func createMembers(cl Client, poolID string, opts *pools.CreateMemberOpts, nodes
 	return memes, err.ErrorOrNil()
 }
 
-func deleteMembers(cl Client, poolID string, memes []*pools.Member) error {
+func deleteMembers(cl *Client, poolID string, memes []*pools.Member) error {
 	errChan := make(chan error, len(memes))
 	for _, mem := range memes {
 		go func(id string) {

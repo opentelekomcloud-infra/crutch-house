@@ -23,7 +23,7 @@ const (
 var defaultDNS = []string{primaryDNS, secondaryDNS}
 
 // InitVPC initializes VPC v1 service
-func (c *client) InitVPC() error {
+func (c *Client) InitVPC() error {
 	if c.VPC != nil {
 		return nil
 	}
@@ -36,7 +36,7 @@ func (c *client) InitVPC() error {
 }
 
 // CreateVPC creates new VPC by d.VpcName
-func (c *client) CreateVPC(vpcName string) (*vpcs.Vpc, error) {
+func (c *Client) CreateVPC(vpcName string) (*vpcs.Vpc, error) {
 	return vpcs.Create(c.VPC, vpcs.CreateOpts{
 		Name: vpcName,
 		CIDR: vpcCIDR,
@@ -44,12 +44,12 @@ func (c *client) CreateVPC(vpcName string) (*vpcs.Vpc, error) {
 }
 
 // GetVPCDetails returns details of VPC
-func (c *client) GetVPCDetails(vpcID string) (*vpcs.Vpc, error) {
+func (c *Client) GetVPCDetails(vpcID string) (*vpcs.Vpc, error) {
 	return vpcs.Get(c.VPC, vpcID).Extract()
 }
 
 // FindVPC find VPC in list by its name and return VPC ID
-func (c *client) FindVPC(vpcName string) (string, error) {
+func (c *Client) FindVPC(vpcName string) (string, error) {
 	opts := vpcs.ListOpts{
 		Name: vpcName,
 	}
@@ -67,7 +67,7 @@ func (c *client) FindVPC(vpcName string) (string, error) {
 }
 
 // WaitForVPCStatus waits until VPC is in given status
-func (c *client) WaitForVPCStatus(vpcID, status string) error {
+func (c *Client) WaitForVPCStatus(vpcID, status string) error {
 	return utils.WaitForSpecificOrError(func() (b bool, err error) {
 		cur, err := c.GetVPCDetails(vpcID)
 		if err != nil {
@@ -84,12 +84,12 @@ func (c *client) WaitForVPCStatus(vpcID, status string) error {
 }
 
 // DeleteVPC removes existing VPC
-func (c *client) DeleteVPC(vpcID string) error {
+func (c *Client) DeleteVPC(vpcID string) error {
 	return vpcs.Delete(c.VPC, vpcID).Err
 }
 
 // CreateSubnet creates new Subnet and set Driver.SubnetID
-func (c *client) CreateSubnet(vpcID string, subnetName string) (*subnets.Subnet, error) {
+func (c *Client) CreateSubnet(vpcID string, subnetName string) (*subnets.Subnet, error) {
 	return subnets.Create(c.VPC, subnets.CreateOpts{
 		VPC_ID:     vpcID,
 		Name:       subnetName,
@@ -102,7 +102,7 @@ func (c *client) CreateSubnet(vpcID string, subnetName string) (*subnets.Subnet,
 }
 
 // FindSubnet find subnet by name in given VPC and return ID
-func (c *client) FindSubnet(vpcID string, subnetName string) (string, error) {
+func (c *Client) FindSubnet(vpcID string, subnetName string) (string, error) {
 	subnetList, err := subnets.List(c.VPC, subnets.ListOpts{
 		Name:   subnetName,
 		VPC_ID: vpcID,
@@ -121,12 +121,12 @@ func (c *client) FindSubnet(vpcID string, subnetName string) (string, error) {
 }
 
 // GetSubnetStatus returns details of subnet by ID
-func (c *client) GetSubnetStatus(subnetID string) (*subnets.Subnet, error) {
+func (c *Client) GetSubnetStatus(subnetID string) (*subnets.Subnet, error) {
 	return subnets.Get(c.VPC, subnetID).Extract()
 }
 
 // WaitForSubnetStatus waits for subnet to be in given status
-func (c *client) WaitForSubnetStatus(subnetID string, status string) error {
+func (c *Client) WaitForSubnetStatus(subnetID string, status string) error {
 	return utils.WaitForSpecificOrError(func() (b bool, err error) {
 		curStatus, err := c.GetSubnetStatus(subnetID)
 		if err != nil {
@@ -143,7 +143,7 @@ func (c *client) WaitForSubnetStatus(subnetID string, status string) error {
 }
 
 // DeleteSubnet removes subnet from VPC
-func (c *client) DeleteSubnet(vpcID string, subnetID string) error {
+func (c *Client) DeleteSubnet(vpcID string, subnetID string) error {
 	return subnets.Delete(c.VPC, vpcID, subnetID).Err
 }
 
@@ -153,7 +153,7 @@ type ElasticIPOpts struct {
 	BandwidthType string
 }
 
-func (c *client) GetEIPStatus(eipID string) (string, error) {
+func (c *Client) GetEIPStatus(eipID string) (string, error) {
 	eip, err := eips.Get(c.VPC, eipID).Extract()
 	if err != nil {
 		return "", err
@@ -161,7 +161,7 @@ func (c *client) GetEIPStatus(eipID string) (string, error) {
 	return eip.Status, err
 }
 
-func (c *client) CreateEIP(opts *ElasticIPOpts) (*eips.PublicIp, error) {
+func (c *Client) CreateEIP(opts *ElasticIPOpts) (*eips.PublicIp, error) {
 	if opts.IPType == "" {
 		opts.IPType = "5_bgp"
 	}
@@ -189,7 +189,7 @@ func (c *client) CreateEIP(opts *ElasticIPOpts) (*eips.PublicIp, error) {
 	return &eip, nil
 }
 
-func (c *client) WaitForEIPActive(eipID string) error {
+func (c *Client) WaitForEIPActive(eipID string) error {
 	return golangsdk.WaitFor(30, func() (bool, error) {
 		status, err := c.GetEIPStatus(eipID)
 		if err != nil {

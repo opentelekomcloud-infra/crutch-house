@@ -76,7 +76,7 @@ type CreateNodesOpts struct {
 }
 
 // InitCCE initializes CCE service
-func (c *client) InitCCE() error {
+func (c *Client) InitCCE() error {
 	if c.CCE != nil {
 		return nil
 	}
@@ -88,7 +88,7 @@ func (c *client) InitCCE() error {
 	return nil
 }
 
-func (c *client) getClusterStatus(clusterID string) (string, error) {
+func (c *Client) getClusterStatus(clusterID string) (string, error) {
 	state, err := clusters.Get(c.CCE, clusterID).Extract()
 	if err != nil {
 		return "", err
@@ -96,7 +96,7 @@ func (c *client) getClusterStatus(clusterID string) (string, error) {
 	return state.Status.Phase, nil
 }
 
-func (c *client) getNodeStatus(clusterID, nodeIDs string) (string, error) {
+func (c *Client) getNodeStatus(clusterID, nodeIDs string) (string, error) {
 	state, err := nodes.Get(c.CCE, clusterID, nodeIDs).Extract()
 	if err != nil {
 		return "", err
@@ -104,7 +104,7 @@ func (c *client) getNodeStatus(clusterID, nodeIDs string) (string, error) {
 	return state.Status.Phase, nil
 }
 
-func (c *client) waitForCluster(clusterID string) error {
+func (c *Client) waitForCluster(clusterID string) error {
 	return golangsdk.WaitFor(20*60, func() (b bool, err error) {
 		state, err := c.getClusterStatus(clusterID)
 		if err != nil {
@@ -117,7 +117,7 @@ func (c *client) waitForCluster(clusterID string) error {
 	})
 }
 
-func (c *client) waitForClusterDelete(clusterID string) error {
+func (c *Client) waitForClusterDelete(clusterID string) error {
 	finishedChan := make(chan bool)
 	go func() {
 		for !<-finishedChan {
@@ -147,7 +147,7 @@ func (c *client) waitForClusterDelete(clusterID string) error {
 }
 
 // CreateCluster create CCE cluster and wait until it is available
-func (c *client) CreateCluster(opts *CreateClusterOpts) (*clusters.Clusters, error) {
+func (c *Client) CreateCluster(opts *CreateClusterOpts) (*clusters.Clusters, error) {
 	opts.ExtendParam = emptyIfNil(opts.ExtendParam)
 	if opts.MultiAZ {
 		opts.ExtendParam["clusterAZ"] = "multi_az"
@@ -196,15 +196,15 @@ func (c *client) CreateCluster(opts *CreateClusterOpts) (*clusters.Clusters, err
 	return create, c.waitForCluster(clusterID)
 }
 
-func (c *client) GetCluster(clusterID string) (*clusters.Clusters, error) {
+func (c *Client) GetCluster(clusterID string) (*clusters.Clusters, error) {
 	return clusters.Get(c.CCE, clusterID).Extract()
 }
 
-func (c *client) GetClusterCertificate(clusterID string) (*clusters.Certificate, error) {
+func (c *Client) GetClusterCertificate(clusterID string) (*clusters.Certificate, error) {
 	return clusters.GetCert(c.CCE, clusterID).Extract()
 }
 
-func (c *client) DeleteCluster(clusterID string) error {
+func (c *Client) DeleteCluster(clusterID string) error {
 	err := clusters.Delete(c.CCE, clusterID).Err
 	if err != nil {
 		return err
@@ -220,7 +220,7 @@ func installScriptEncode(script string) string {
 	return script
 }
 
-func (c *client) waitForMultipleNodes(clusterID string, nodeIDs []string, predicate func(nodeStatus string, err error) (bool, error)) (err *multierror.Error) {
+func (c *Client) waitForMultipleNodes(clusterID string, nodeIDs []string, predicate func(nodeStatus string, err error) (bool, error)) (err *multierror.Error) {
 	var errChan = make(chan error, len(nodeIDs))
 	for _, nodeID := range nodeIDs {
 		go func(node string) {
@@ -237,7 +237,7 @@ func (c *client) waitForMultipleNodes(clusterID string, nodeIDs []string, predic
 	return err
 }
 
-func (c *client) waitForNodesActive(clusterID string, nodeIDs []string) *multierror.Error {
+func (c *Client) waitForNodesActive(clusterID string, nodeIDs []string) *multierror.Error {
 	return c.waitForMultipleNodes(clusterID, nodeIDs, func(nodeStatus string, err error) (bool, error) {
 		if err != nil {
 			return true, err
@@ -246,7 +246,7 @@ func (c *client) waitForNodesActive(clusterID string, nodeIDs []string) *multier
 	})
 }
 
-func (c *client) waitForNodesDeleted(clusterID string, nodeIDs []string) *multierror.Error {
+func (c *Client) waitForNodesDeleted(clusterID string, nodeIDs []string) *multierror.Error {
 	return c.waitForMultipleNodes(clusterID, nodeIDs, func(nodeStatus string, err error) (bool, error) {
 		if err == nil {
 			return false, nil
@@ -268,7 +268,7 @@ func emptyIfNil(src map[string]string) map[string]string {
 }
 
 // CreateNodes create `count` nodes and wait until they are active
-func (c *client) CreateNodes(opts *CreateNodesOpts, count int) ([]string, error) {
+func (c *Client) CreateNodes(opts *CreateNodesOpts, count int) ([]string, error) {
 	var base64PreInstall, base64PostInstall string
 	if opts.PreInstall != "" {
 		base64PreInstall = installScriptEncode(opts.PreInstall)
@@ -336,7 +336,7 @@ func (c *client) CreateNodes(opts *CreateNodesOpts, count int) ([]string, error)
 }
 
 // GetNodesStatus returns statuses of given nodes
-func (c *client) GetNodesStatus(clusterID string, nodeIDs []string) ([]*nodes.Status, error) {
+func (c *Client) GetNodesStatus(clusterID string, nodeIDs []string) ([]*nodes.Status, error) {
 	nodesChan := make(chan *nodes.Status, len(nodeIDs))
 	errChan := make(chan error, len(nodeIDs))
 	for _, nodeID := range nodeIDs {
@@ -360,8 +360,8 @@ func (c *client) GetNodesStatus(clusterID string, nodeIDs []string) ([]*nodes.St
 	return result, mErr.ErrorOrNil()
 }
 
-// Delete all given nodes
-func (c *client) DeleteNodes(clusterID string, nodeIDs []string) error {
+// DeleteNodes deletes all given nodes
+func (c *Client) DeleteNodes(clusterID string, nodeIDs []string) error {
 	var errChan = make(chan error, len(nodeIDs))
 	for _, nodeID := range nodeIDs {
 		go func(node string) {
@@ -377,7 +377,7 @@ func (c *client) DeleteNodes(clusterID string, nodeIDs []string) error {
 	return err.ErrorOrNil()
 }
 
-// Update cluster description
-func (c *client) UpdateCluster(clusterID string, opts *clusters.UpdateSpec) error {
+// UpdateCluster updates cluster description
+func (c *Client) UpdateCluster(clusterID string, opts *clusters.UpdateSpec) error {
 	return clusters.Update(c.CCE, clusterID, clusters.UpdateOpts{Spec: *opts}).Err
 }

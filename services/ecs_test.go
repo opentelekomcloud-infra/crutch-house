@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func ecsClient(t *testing.T) Client {
+func ecsClient(t *testing.T) *Client {
 	client := authClient(t)
 	require.NoError(t, client.InitECS())
 	return client
