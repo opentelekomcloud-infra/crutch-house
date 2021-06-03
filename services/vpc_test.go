@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func initNetwork(t *testing.T, client Client) {
+func initNetwork(t *testing.T, client *Client) {
 	require.NoError(t, client.InitVPC())
 }
 

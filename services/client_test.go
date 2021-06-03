@@ -46,7 +46,7 @@ func cleanUpEnvVars(vars []string) {
 	}
 }
 
-func authClient(t *testing.T) Client {
+func authClient(t *testing.T) *Client {
 	pref := "OS_"
 
 	client, err := NewClient(pref)

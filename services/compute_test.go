@@ -86,7 +86,7 @@ func cleanupResources(t *testing.T) {
 
 }
 
-func computeClient(t *testing.T) Client {
+func computeClient(t *testing.T) *Client {
 	client := authClient(t)
 	require.NoError(t, client.InitCompute())
 	return client
@@ -156,7 +156,7 @@ func TestClient_CreateFloatingIP(t *testing.T) {
 	assert.Empty(t, addrID)
 }
 
-func waitForInstanceIPBind(c Client, instanceID string, ip string, bind bool) error {
+func waitForInstanceIPBind(c *Client, instanceID string, ip string, bind bool) error {
 	return golangsdk.WaitFor(300, func() (b bool, err error) {
 		assigned, err := c.InstanceBindToIP(instanceID, ip)
 		if err != nil {
@@ -169,14 +169,14 @@ func waitForInstanceIPBind(c Client, instanceID string, ip string, bind bool) er
 	})
 }
 
-func createServerGroup(client Client) (group *servergroups.ServerGroup, err error) {
+func createServerGroup(client *Client) (group *servergroups.ServerGroup, err error) {
 	return client.CreateServerGroup(&servergroups.CreateOpts{
 		Name:     "test-group",
 		Policies: []string{"anti-affinity"},
 	})
 }
 
-func deleteServerGroup(cl Client, id string) {
+func deleteServerGroup(cl *Client, id string) {
 	_ = cl.DeleteServerGroup(id)
 }
 

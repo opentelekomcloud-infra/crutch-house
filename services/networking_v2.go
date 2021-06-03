@@ -14,7 +14,7 @@ import (
 const LBStateActive = "ACTIVE"
 
 // InitNetworkV2 initializes OpenStack Neutron client
-func (c *client) InitNetworkV2() error {
+func (c *Client) InitNetworkV2() error {
 	if c.NetworkV2 != nil {
 		return nil
 	}
@@ -27,7 +27,7 @@ func (c *client) InitNetworkV2() error {
 }
 
 // CreateLoadBalancer creating new ELBv2
-func (c *client) CreateLoadBalancer(opts *loadbalancers.CreateOpts) (*loadbalancers.LoadBalancer, error) {
+func (c *Client) CreateLoadBalancer(opts *loadbalancers.CreateOpts) (*loadbalancers.LoadBalancer, error) {
 	lb, err := loadbalancers.Create(c.NetworkV2, opts).Extract()
 	if err != nil {
 		return nil, err
@@ -41,11 +41,11 @@ func (c *client) CreateLoadBalancer(opts *loadbalancers.CreateOpts) (*loadbalanc
 }
 
 // GetLoadBalancerDetails fetches load balancer data
-func (c *client) GetLoadBalancerDetails(id string) (*loadbalancers.LoadBalancer, error) {
+func (c *Client) GetLoadBalancerDetails(id string) (*loadbalancers.LoadBalancer, error) {
 	return loadbalancers.Get(c.NetworkV2, id).Extract()
 }
 
-func (c *client) waitForLBActive(loadBalancerID string) error {
+func (c *Client) waitForLBActive(loadBalancerID string) error {
 	return golangsdk.WaitFor(60, func() (bool, error) {
 		lb, err := c.GetLoadBalancerDetails(loadBalancerID)
 		if err != nil {
@@ -58,7 +58,7 @@ func (c *client) waitForLBActive(loadBalancerID string) error {
 	})
 }
 
-func (c *client) waitForLBDeleted(loadBalancerID string) error {
+func (c *Client) waitForLBDeleted(loadBalancerID string) error {
 	return golangsdk.WaitFor(60, func() (bool, error) {
 		_, err := c.GetLoadBalancerDetails(loadBalancerID)
 		if err == nil {
@@ -74,7 +74,7 @@ func (c *client) waitForLBDeleted(loadBalancerID string) error {
 }
 
 // DeleteLoadBalancer removes existing load balancer
-func (c *client) DeleteLoadBalancer(id string) error {
+func (c *Client) DeleteLoadBalancer(id string) error {
 	if err := loadbalancers.Delete(c.NetworkV2, id).Err; err != nil {
 		return err
 	}
@@ -82,7 +82,7 @@ func (c *client) DeleteLoadBalancer(id string) error {
 }
 
 // BindFloatingIPToPort binds floating IP to networking port
-func (c *client) BindFloatingIPToPort(floatingIP, portID string) error {
+func (c *Client) BindFloatingIPToPort(floatingIP, portID string) error {
 	page, err := floatingips.List(c.NetworkV2, floatingips.ListOpts{
 		FloatingIP: floatingIP,
 	}).AllPages()
@@ -100,36 +100,36 @@ func (c *client) BindFloatingIPToPort(floatingIP, portID string) error {
 	return floatingips.Update(c.NetworkV2, ids[0].ID, opts).Err
 }
 
-func (c *client) CreateLBListener(opts *listeners.CreateOpts) (*listeners.Listener, error) {
+func (c *Client) CreateLBListener(opts *listeners.CreateOpts) (*listeners.Listener, error) {
 	return listeners.Create(c.NetworkV2, *opts).Extract()
 }
 
-func (c *client) DeleteLBListener(id string) error {
+func (c *Client) DeleteLBListener(id string) error {
 	return listeners.Delete(c.NetworkV2, id).Err
 }
 
-func (c *client) CreateLBPool(opts *pools.CreateOpts) (*pools.Pool, error) {
+func (c *Client) CreateLBPool(opts *pools.CreateOpts) (*pools.Pool, error) {
 	return pools.Create(c.NetworkV2, opts).Extract()
 }
 
-func (c *client) DeleteLBPool(id string) error {
+func (c *Client) DeleteLBPool(id string) error {
 	return pools.Delete(c.NetworkV2, id).Err
 }
 
-func (c *client) CreateLBMember(poolID string, opts *pools.CreateMemberOpts) (*pools.Member, error) {
+func (c *Client) CreateLBMember(poolID string, opts *pools.CreateMemberOpts) (*pools.Member, error) {
 	return pools.CreateMember(c.NetworkV2, poolID, *opts).Extract()
 }
 
-func (c *client) GetLBMemberStatus(poolID, memberID string) (*pools.Member, error) {
+func (c *Client) GetLBMemberStatus(poolID, memberID string) (*pools.Member, error) {
 	return pools.GetMember(c.NetworkV2, poolID, memberID).Extract()
 }
 
-func (c *client) DeleteLBMember(poolID, memberID string) error {
+func (c *Client) DeleteLBMember(poolID, memberID string) error {
 	return pools.DeleteMember(c.NetworkV2, poolID, memberID).Err
 }
 
 // as it's done in terraform provider
-func (c *client) waitForLBV2viaPool(id string) error {
+func (c *Client) waitForLBV2viaPool(id string) error {
 	pool, err := pools.Get(c.NetworkV2, id).Extract()
 	if err != nil {
 		return err
@@ -154,7 +154,7 @@ func (c *client) waitForLBV2viaPool(id string) error {
 	return fmt.Errorf("no Load Balancer on pool %s", id)
 }
 
-func (c *client) CreateLBMonitor(opts *monitors.CreateOpts) (*monitors.Monitor, error) {
+func (c *Client) CreateLBMonitor(opts *monitors.CreateOpts) (*monitors.Monitor, error) {
 	if err := c.waitForLBV2viaPool(opts.PoolID); err != nil {
 		return nil, err
 	}
@@ -168,6 +168,6 @@ func (c *client) CreateLBMonitor(opts *monitors.CreateOpts) (*monitors.Monitor, 
 	return monitor, nil
 }
 
-func (c *client) DeleteLBMonitor(id string) error {
+func (c *Client) DeleteLBMonitor(id string) error {
 	return monitors.Delete(c.NetworkV2, id).Err
 }

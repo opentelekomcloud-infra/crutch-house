@@ -26,7 +26,7 @@ const (
 )
 
 // InitCompute initializes Compute v2 service
-func (c *client) InitCompute() error {
+func (c *Client) InitCompute() error {
 	if c.ComputeV2 != nil {
 		return nil
 	}
@@ -66,7 +66,7 @@ type ExtendedServerOpts struct {
 }
 
 // CreateInstance creates new ECS
-func (c *client) CreateInstance(opts *ExtendedServerOpts) (*servers.Server, error) {
+func (c *Client) CreateInstance(opts *ExtendedServerOpts) (*servers.Server, error) {
 
 	var createOpts servers.CreateOptsBuilder = &servers.CreateOpts{
 		Name:             opts.Name,
@@ -108,28 +108,28 @@ func (c *client) CreateInstance(opts *ExtendedServerOpts) (*servers.Server, erro
 }
 
 // StartInstance starts existing ECS instance
-func (c *client) StartInstance(instanceID string) error {
+func (c *Client) StartInstance(instanceID string) error {
 	return startstop.Start(c.ComputeV2, instanceID).Err
 }
 
 // StopInstance stops existing ECS instance
-func (c *client) StopInstance(instanceID string) error {
+func (c *Client) StopInstance(instanceID string) error {
 	return startstop.Stop(c.ComputeV2, instanceID).Err
 }
 
 // RestartInstance restarts ECS instance
-func (c *client) RestartInstance(instanceID string) error {
+func (c *Client) RestartInstance(instanceID string) error {
 	opts := &servers.RebootOpts{Type: servers.SoftReboot}
 	return servers.Reboot(c.ComputeV2, instanceID, opts).Err
 }
 
 // DeleteInstance removes existing ECS instance
-func (c *client) DeleteInstance(instanceID string) error {
+func (c *Client) DeleteInstance(instanceID string) error {
 	return servers.Delete(c.ComputeV2, instanceID).Err
 }
 
 // FindInstance returns instance ID by instance Name
-func (c *client) FindInstance(name string) (string, error) {
+func (c *Client) FindInstance(name string) (string, error) {
 	listOpts := servers.ListOpts{Name: name}
 	pager := servers.List(c.ComputeV2, listOpts)
 	serverID := ""
@@ -151,17 +151,17 @@ func (c *client) FindInstance(name string) (string, error) {
 }
 
 // GetInstanceStatus returns instance details by instance ID
-func (c *client) GetInstanceStatus(instanceID string) (*servers.Server, error) {
+func (c *Client) GetInstanceStatus(instanceID string) (*servers.Server, error) {
 	return servers.Get(c.ComputeV2, instanceID).Extract()
 }
 
 // WaitForInstanceStatus waits for instance to be in given status
-func (c *client) WaitForInstanceStatus(instanceID string, status string) error {
+func (c *Client) WaitForInstanceStatus(instanceID string, status string) error {
 	return servers.WaitForStatus(c.ComputeV2, instanceID, status, 300)
 }
 
 // InstanceBindToIP checks if instance has IP bind
-func (c *client) InstanceBindToIP(instanceID string, ip string) (bool, error) {
+func (c *Client) InstanceBindToIP(instanceID string, ip string) (bool, error) {
 	instanceDetails, err := c.GetInstanceStatus(instanceID)
 	if err != nil {
 		return false, err
@@ -178,7 +178,7 @@ func (c *client) InstanceBindToIP(instanceID string, ip string) (bool, error) {
 }
 
 // GetPublicKey returns public key data from keypair
-func (c *client) GetPublicKey(keyPairName string) ([]byte, error) {
+func (c *Client) GetPublicKey(keyPairName string) ([]byte, error) {
 	keyPair, err := keypairs.Get(c.ComputeV2, keyPairName).Extract()
 	if err != nil {
 		return nil, err
@@ -187,7 +187,7 @@ func (c *client) GetPublicKey(keyPairName string) ([]byte, error) {
 }
 
 // CreateKeyPair creates new key pair from given public key string
-func (c *client) CreateKeyPair(name string, publicKey string) (*keypairs.KeyPair, error) {
+func (c *Client) CreateKeyPair(name string, publicKey string) (*keypairs.KeyPair, error) {
 	opts := keypairs.CreateOpts{
 		Name:      name,
 		PublicKey: publicKey,
@@ -200,7 +200,7 @@ func (c *client) CreateKeyPair(name string, publicKey string) (*keypairs.KeyPair
 }
 
 // FindKeyPair searches for key pair and returns public key
-func (c *client) FindKeyPair(name string) (string, error) {
+func (c *Client) FindKeyPair(name string) (string, error) {
 	pager := keypairs.List(c.ComputeV2)
 	publicKey := ""
 	err := pager.EachPage(func(page pagination.Page) (b bool, err error) {
@@ -223,12 +223,12 @@ func (c *client) FindKeyPair(name string) (string, error) {
 }
 
 // DeleteKeyPair removes existing key pair
-func (c *client) DeleteKeyPair(name string) error {
+func (c *Client) DeleteKeyPair(name string) error {
 	return keypairs.Delete(c.ComputeV2, name).Err
 }
 
 // FindFlavor resolves `Flavor ID` for given `Flavor Name`
-func (c *client) FindFlavor(flavorName string) (string, error) {
+func (c *Client) FindFlavor(flavorName string) (string, error) {
 	pagedFlavors := flavors.ListDetail(c.ComputeV2, nil)
 	flavorID := ""
 	err := pagedFlavors.EachPage(func(page pagination.Page) (b bool, err error) {
@@ -251,7 +251,7 @@ func (c *client) FindFlavor(flavorName string) (string, error) {
 }
 
 // FindImage resolve image ID by given image Name
-func (c *client) FindImage(imageName string) (string, error) {
+func (c *Client) FindImage(imageName string) (string, error) {
 	opts := images.ListOpts{Name: imageName}
 	pager := images.List(c.ComputeV2, opts)
 	imageID := ""
@@ -279,7 +279,7 @@ const (
 	tcpProtocol = "TCP"
 )
 
-func (c *client) addInboundRule(secGroupID string, fromPort int, toPort int) error {
+func (c *Client) addInboundRule(secGroupID string, fromPort int, toPort int) error {
 
 	ruleOpts := secgroups.CreateRuleOpts{
 		ParentGroupID: secGroupID,
@@ -298,7 +298,7 @@ type PortRange struct {
 }
 
 // CreateSecurityGroup creates new sec group and returns group ID
-func (c *client) CreateSecurityGroup(securityGroupName string, ports ...PortRange) (*secgroups.SecurityGroup, error) {
+func (c *Client) CreateSecurityGroup(securityGroupName string, ports ...PortRange) (*secgroups.SecurityGroup, error) {
 	opts := secgroups.CreateOpts{
 		Name:        securityGroupName,
 		Description: "Automatically created by docker-machine for OTC",
@@ -346,7 +346,7 @@ func findSGInPagerByNameOrID(secGroups []string, pager pagination.Pager) ([]stri
 }
 
 // FindSecurityGroups get slice of security group IDs from given security group names
-func (c *client) FindSecurityGroups(secGroups []string) ([]string, error) {
+func (c *Client) FindSecurityGroups(secGroups []string) ([]string, error) {
 	pager := secgroups.List(c.ComputeV2)
 	secGroupIDs, missing, err := findSGInPagerByNameOrID(secGroups, pager)
 	if err != nil {
@@ -360,12 +360,12 @@ func (c *client) FindSecurityGroups(secGroups []string) ([]string, error) {
 }
 
 // DeleteSecurityGroup deletes managed security group
-func (c *client) DeleteSecurityGroup(securityGroupID string) error {
+func (c *Client) DeleteSecurityGroup(securityGroupID string) error {
 	return secgroups.Delete(c.ComputeV2, securityGroupID).Err
 }
 
 // WaitForGroupDeleted polls sec group until it returns 404
-func (c *client) WaitForGroupDeleted(securityGroupID string) error {
+func (c *Client) WaitForGroupDeleted(securityGroupID string) error {
 	return golangsdk.WaitFor(60, func() (b bool, e error) {
 		err := secgroups.Get(c.ComputeV2, securityGroupID).Err
 		if err == nil {
@@ -381,19 +381,19 @@ func (c *client) WaitForGroupDeleted(securityGroupID string) error {
 }
 
 // BindFloatingIP binds floating IP to instance
-func (c *client) BindFloatingIP(floatingIP, instanceID string) error {
+func (c *Client) BindFloatingIP(floatingIP, instanceID string) error {
 	opts := floatingips.AssociateOpts{FloatingIP: floatingIP}
 	return floatingips.AssociateInstance(c.ComputeV2, instanceID, opts).Err
 }
 
 // UnbindFloatingIP unbinds floating IP to instance
-func (c *client) UnbindFloatingIP(floatingIP, instanceID string) error {
+func (c *Client) UnbindFloatingIP(floatingIP, instanceID string) error {
 	opts := floatingips.DisassociateOpts{FloatingIP: floatingIP}
 	return floatingips.DisassociateInstance(c.ComputeV2, instanceID, opts).Err
 }
 
 // FindFloatingIP finds given floating IP and returns ID
-func (c *client) FindFloatingIP(floatingIP string) (addressID string, err error) {
+func (c *Client) FindFloatingIP(floatingIP string) (addressID string, err error) {
 	pager := floatingips.List(c.ComputeV2)
 	addressID = ""
 	err = pager.EachPage(func(page pagination.Page) (b bool, err error) {
@@ -413,7 +413,7 @@ func (c *client) FindFloatingIP(floatingIP string) (addressID string, err error)
 }
 
 // DeleteFloatingIP releases floating IP
-func (c *client) DeleteFloatingIP(floatingIP string) error {
+func (c *Client) DeleteFloatingIP(floatingIP string) error {
 	address, err := c.FindFloatingIP(floatingIP)
 	if err != nil {
 		return err
@@ -421,7 +421,7 @@ func (c *client) DeleteFloatingIP(floatingIP string) error {
 	return floatingips.Delete(c.ComputeV2, address).Err
 }
 
-func (c *client) FindServerGroup(groupName string) (result string, err error) {
+func (c *Client) FindServerGroup(groupName string) (result string, err error) {
 	pager := servergroups.List(c.ComputeV2)
 	result = ""
 	err = pager.EachPage(func(page pagination.Page) (bool, error) {
@@ -440,15 +440,15 @@ func (c *client) FindServerGroup(groupName string) (result string, err error) {
 	return
 }
 
-func (c *client) AddTags(instanceID string, serverTags []string) error {
+func (c *Client) AddTags(instanceID string, serverTags []string) error {
 	opts := tags.CreateOpts{Tags: serverTags}
 	return tags.Create(c.ComputeV2, instanceID, opts).Err
 }
 
-func (c *client) CreateServerGroup(opts *servergroups.CreateOpts) (*servergroups.ServerGroup, error) {
+func (c *Client) CreateServerGroup(opts *servergroups.CreateOpts) (*servergroups.ServerGroup, error) {
 	return servergroups.Create(c.ComputeV2, opts).Extract()
 }
 
-func (c *client) DeleteServerGroup(id string) error {
+func (c *Client) DeleteServerGroup(id string) error {
 	return servergroups.Delete(c.ComputeV2, id).Err
 }
