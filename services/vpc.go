@@ -90,13 +90,14 @@ func (c *Client) DeleteVPC(vpcID string) error {
 
 // CreateSubnet creates new Subnet and set Driver.SubnetID
 func (c *Client) CreateSubnet(vpcID string, subnetName string) (*subnets.Subnet, error) {
+	iTrue := true
 	return subnets.Create(c.VPC, subnets.CreateOpts{
-		VPC_ID:     vpcID,
+		VpcID:      vpcID,
 		Name:       subnetName,
 		CIDR:       subnetCIDR,
-		DnsList:    defaultDNS,
+		DNSList:    defaultDNS,
 		GatewayIP:  defaultGateway,
-		EnableDHCP: true,
+		EnableDHCP: &iTrue,
 	},
 	).Extract()
 }
@@ -104,8 +105,8 @@ func (c *Client) CreateSubnet(vpcID string, subnetName string) (*subnets.Subnet,
 // FindSubnet find subnet by name in given VPC and return ID
 func (c *Client) FindSubnet(vpcID string, subnetName string) (string, error) {
 	subnetList, err := subnets.List(c.VPC, subnets.ListOpts{
-		Name:   subnetName,
-		VPC_ID: vpcID,
+		Name:  subnetName,
+		VpcID: vpcID,
 	})
 	if err != nil {
 		return "", err
@@ -186,7 +187,7 @@ func (c *Client) CreateEIP(opts *ElasticIPOpts) (*eips.PublicIp, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &eip, nil
+	return eip, nil
 }
 
 func (c *Client) WaitForEIPActive(eipID string) error {
