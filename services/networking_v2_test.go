@@ -211,7 +211,7 @@ func TestClient_LoadBalancerLifecycle(t *testing.T) {
 	lb, err := client.CreateLoadBalancer(&loadbalancers.CreateOpts{
 		Name:         "test-lb",
 		Description:  "test lb",
-		VipSubnetID:  subnet.SubnetId,
+		VipSubnetID:  subnet.SubnetID,
 		AdminStateUp: golangsdk.Enabled,
 	})
 	require.NoError(t, err)
@@ -250,7 +250,7 @@ func TestClient_LoadBalancerLifecycle(t *testing.T) {
 		pool.ID,
 		&pools.CreateMemberOpts{
 			ProtocolPort: protocolPort,
-			SubnetID:     subnet.SubnetId,
+			SubnetID:     subnet.SubnetID,
 		},
 		nodes,
 		addresses,
