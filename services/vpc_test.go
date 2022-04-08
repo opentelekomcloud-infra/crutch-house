@@ -3,7 +3,7 @@ package services
 import (
 	"testing"
 
-	"github.com/opentelekomcloud/gophertelekomcloud"
+	golangsdk "github.com/opentelekomcloud/gophertelekomcloud"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

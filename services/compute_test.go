@@ -4,7 +4,7 @@ import (
 	"log"
 	"testing"
 
-	"github.com/opentelekomcloud/gophertelekomcloud"
+	golangsdk "github.com/opentelekomcloud/gophertelekomcloud"
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/compute/v2/extensions/servergroups"
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/compute/v2/servers"
 	"github.com/stretchr/testify/assert"
@@ -83,7 +83,6 @@ func cleanupResources(t *testing.T) {
 		deleteSubnet(t, vpcID, subnetID)
 	}
 	deleteVPC(t, vpcID)
-
 }
 
 func computeClient(t *testing.T) *Client {
@@ -268,7 +267,6 @@ func TestClient_CreateInstance(t *testing.T) {
 
 	assert.NoError(t, client.RestartInstance(instance.ID))
 	assert.NoError(t, client.WaitForInstanceStatus(instance.ID, InstanceStatusRunning))
-
 }
 
 func TestClient_FindFlavor(t *testing.T) {

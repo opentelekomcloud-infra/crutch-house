@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/opentelekomcloud/gophertelekomcloud"
+	golangsdk "github.com/opentelekomcloud/gophertelekomcloud"
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/cce/v3/clusters"
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/cce/v3/nodes"
 
@@ -110,6 +110,7 @@ func (c *Client) waitForCluster(clusterID string) error {
 		if err != nil {
 			return true, err
 		}
+		time.Sleep(30 * time.Second)
 		if state == ClusterAvailable {
 			return true, nil
 		}
@@ -128,7 +129,7 @@ func (c *Client) waitForClusterDelete(clusterID string) error {
 	err := golangsdk.WaitFor(30*60, func() (bool, error) {
 		_, err := c.getClusterStatus(clusterID)
 		if err == nil {
-			time.Sleep(1 * time.Minute)
+			time.Sleep(30 * time.Second)
 			finishedChan <- false
 			return false, nil
 		}
@@ -242,6 +243,7 @@ func (c *Client) waitForNodesActive(clusterID string, nodeIDs []string) *multier
 		if err != nil {
 			return true, err
 		}
+		time.Sleep(30 * time.Second)
 		return nodeStatus == NodeActive, nil
 	})
 }
@@ -249,6 +251,7 @@ func (c *Client) waitForNodesActive(clusterID string, nodeIDs []string) *multier
 func (c *Client) waitForNodesDeleted(clusterID string, nodeIDs []string) *multierror.Error {
 	return c.waitForMultipleNodes(clusterID, nodeIDs, func(nodeStatus string, err error) (bool, error) {
 		if err == nil {
+			time.Sleep(30 * time.Second)
 			return false, nil
 		}
 		switch err.(type) {

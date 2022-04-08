@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/opentelekomcloud/gophertelekomcloud"
+	golangsdk "github.com/opentelekomcloud/gophertelekomcloud"
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack"
 )
 
@@ -13,6 +13,8 @@ const (
 	maxAttempts         = 50
 	waitInterval        = 5 * time.Second
 	defaultEndpointType = golangsdk.AvailabilityPublic
+
+	userAgent = "otc-crutch-house/v0.1"
 )
 
 // Client contains service clients
@@ -41,9 +43,7 @@ func NewClient(prefix string) (*Client, error) {
 	return &Client{cloud: cloud}, nil
 }
 
-var userAgent = fmt.Sprintf("otc-crutch-house/v0.1")
-
-// Authenticate authenticate client in the cloud with token (either directly or via username/password)
+// Authenticate - authenticate client in the cloud with token (either directly or via username/password)
 func (c *Client) Authenticate() error {
 	if c.Provider != nil && c.Provider.Token() != "" {
 		return nil

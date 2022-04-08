@@ -3,7 +3,7 @@ package services
 import (
 	"fmt"
 
-	"github.com/opentelekomcloud/gophertelekomcloud"
+	golangsdk "github.com/opentelekomcloud/gophertelekomcloud"
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/networking/v1/eips"
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/networking/v1/subnets"
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/networking/v1/vpcs"

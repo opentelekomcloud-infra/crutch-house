@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/opentelekomcloud/gophertelekomcloud"
+	golangsdk "github.com/opentelekomcloud/gophertelekomcloud"
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/compute/v2/extensions/bootfromvolume"
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/compute/v2/extensions/floatingips"
 	"github.com/opentelekomcloud/gophertelekomcloud/openstack/compute/v2/extensions/keypairs"
@@ -67,7 +67,6 @@ type ExtendedServerOpts struct {
 
 // CreateInstance creates new ECS
 func (c *Client) CreateInstance(opts *ExtendedServerOpts) (*servers.Server, error) {
-
 	var createOpts servers.CreateOptsBuilder = &servers.CreateOpts{
 		Name:             opts.Name,
 		FlavorRef:        opts.FlavorRef,
@@ -280,7 +279,6 @@ const (
 )
 
 func (c *Client) addInboundRule(secGroupID string, fromPort int, toPort int) error {
-
 	ruleOpts := secgroups.CreateRuleOpts{
 		ParentGroupID: secGroupID,
 		FromPort:      fromPort,
