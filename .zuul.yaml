@@ -7,6 +7,9 @@
       jobs:
         - otc-golangci-lint
         - golang-make-vet
+    check-post:
+      jobs:
+        - golang-make-functional
     gate:
       jobs:
         - otc-golangci-lint
