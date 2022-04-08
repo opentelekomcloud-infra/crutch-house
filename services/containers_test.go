@@ -17,9 +17,6 @@ func initCCE(t *testing.T, client *Client) {
 }
 
 func TestClient_ClusterLifecycle(t *testing.T) {
-	if os.Getenv("TEST_CCE") == "" {
-		t.Skip("Cluster lifecycle test is not selected (use TEST_CCE env var to make it run)")
-	}
 	cleanupResources(t)
 
 	client := computeClient(t)

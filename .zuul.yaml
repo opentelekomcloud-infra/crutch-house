@@ -1,14 +1,14 @@
+---
 - project:
     merge-mode: squash-merge
     vars:
       functest_project_name: "eu-de_zuul_go"
-      go_version: "1.14"
     check:
       jobs:
-        - golangci-lint
+        - otc-golangci-lint
         - golang-make-vet
     gate:
       jobs:
-        - golangci-lint
+        - otc-golangci-lint
         - golang-make-vet
         - golang-make-functional
